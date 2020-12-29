@@ -14,7 +14,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 client = commands.Bot(command_prefix="$")
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # Google Sheets API Login
 creds = None
