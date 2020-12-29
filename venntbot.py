@@ -1,6 +1,6 @@
 from __future__ import print_function
-import os, discord
-import time, pickle, requests, json, operator, random
+import discord, os, time, pickle, requests, json
+import re, operator, random, d20
 from bs4 import BeautifulSoup
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -44,6 +44,8 @@ with open("characters.json") as f:
 	characters = file["characters"]
 with open("abilities.json",encoding="utf8") as f:
 	abilities = json.load(f)
+with open("weapons.json") as f:
+	weapons = json.load(f)	
 	
 players = ["Bang", "January", "CC", "Shen", "Kyle"]
 	
@@ -70,10 +72,6 @@ def update_to_sheets(spreadsheet_id, sheet_range, vs):
 
 def d6():
 	return random.randint(1,6)
-
-# parse a roll
-def roll(roll_str):
-	pass # TODO
 	
 def check_no_print(who, attr):
 	attr_val = get_attr_val(who, attr)
@@ -107,6 +105,11 @@ def get_attr_val(who, which):
 # --------- COMMANDS --------------------
 
 @client.command(pass_context=True)
+async def roll(ctx, *args, help = "-- Basic dice rolling parser. For flow, use 4d6kh3. Comments can go in brackets."):
+	rollstr = "".join(args[:]) # remove spaces
+	await ctx.send(str(d20.roll(rollstr)))
+
+@client.command(pass_context=True)
 async def next_turn(ctx, help = "-- Advance the turn order"):
 	global turn_order, init_index
 	sorted_turns = sorted(turn_order.items(), key=operator.itemgetter(1),reverse=True)
@@ -123,7 +126,8 @@ async def next_turn(ctx, help = "-- Advance the turn order"):
 
 @client.command(pass_context=True)
 async def set(ctx, who, val, stat, help="-- Set HP MP or Vim. Usage: $set character amount stat"):
-	val = val.replace("+", "")
+	if isinstance(val, str):
+		val = val.replace("+", "")
 	stat = stat.upper()
 	if stat not in ["HP", "MP", "VIM"]:
 		await ctx.send("Unknown stat")
@@ -140,6 +144,7 @@ async def set(ctx, who, val, stat, help="-- Set HP MP or Vim. Usage: $set charac
 	
 @client.command(pass_context=True)
 async def modify(ctx, who, val, stat, help="-- Modify HP MP or Vim. Usage: $set character amount stat"):
+	val = int(val.replace("+", ""))
 	val = val + get_attr_val(who, stat)
 	await set(ctx, who, val, stat)
 
@@ -173,6 +178,24 @@ async def attr(ctx, who, which, help="-- Get someone's attributes. Usage: $who n
 	attr = which.upper()
 	result = data[ATTRS.index(attr)]
 	await ctx.send(who + "'s " + attr + " is " + result[0])
+	
+	
+@client.command(pass_context=True)
+async def attack(ctx, who, weapon, help='-- Roll an attack with a weapon. Usage: $attack attacker weapon-type'):
+	found = False
+	for w in weapons:
+		if w["name"] == weapon:
+			w_attr = w["attr"]
+			w_dmg = w["dmg"]
+			found = True
+			break
+	
+	if not found:
+		ctx.send("Unrecognized weapon: " + weapon + ".")
+	else:
+		val = get_attr_val(who, w_attr)
+		await ctx.send(who + " attacks with a " + weapon + "!")
+		await roll(ctx, w_dmg + "+" + str(val))
 	
 
 @client.command(pass_context=True)
