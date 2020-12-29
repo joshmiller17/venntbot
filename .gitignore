@@ -1,5 +1,7 @@
-# Bot token
+# Credentials
 .env
+token.pickle
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
