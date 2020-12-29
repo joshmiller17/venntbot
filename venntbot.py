@@ -65,7 +65,7 @@ def get_from_sheets(spreadsheet_id, sheet_range):
 def update_to_sheets(spreadsheet_id, sheet_range, vs):
 	body = {'values' : vs}
 	result = service.spreadsheets().values().update(
-    spreadsheetId=spreadsheet_id, range=sheet_range,
+	spreadsheetId=spreadsheet_id, range=sheet_range,
 	valueInputOption='RAW', body=body).execute()
 
 def d6():
@@ -106,9 +106,24 @@ def get_attr_val(who, which):
 
 # --------- COMMANDS --------------------
 
+@client.command(pass_context=True)
+async def next_turn(ctx, help = "-- Advance the turn order"):
+	global turn_order, init_index
+	sorted_turns = sorted(turn_order.items(), key=operator.itemgetter(1),reverse=True)
+	print(sorted_turns)
+	for who, val in sorted_turns:
+		if val < init_index:
+			init_index = val
+			await ctx.send("Now " + who + "'s turn.")
+			return
+	# reached the bottom, wrap around
+	init_index = 99
+	await ctx.send("New round!")
+	await next_turn(ctx)
 
 @client.command(pass_context=True)
-async def set(ctx, who, val, stat, help="Set HP MP or Vim. Usage: $set character amount stat"):
+async def set(ctx, who, val, stat, help="-- Set HP MP or Vim. Usage: $set character amount stat"):
+	val = val.replace("+", "")
 	stat = stat.upper()
 	if stat not in ["HP", "MP", "VIM"]:
 		await ctx.send("Unknown stat")
@@ -124,25 +139,9 @@ async def set(ctx, who, val, stat, help="Set HP MP or Vim. Usage: $set character
 	
 	
 @client.command(pass_context=True)
-async def modify(ctx, who, val, stat, help="Modify HP MP or Vim. Usage: $set character amount stat"):
+async def modify(ctx, who, val, stat, help="-- Modify HP MP or Vim. Usage: $set character amount stat"):
 	val = val + get_attr_val(who, stat)
 	await set(ctx, who, val, stat)
-	
-
-@client.command(pass_context=True)
-async def next_turn(ctx, help="Advance the turn order"):
-	global turn_order, init_index
-	sorted_turns = sorted(turn_order.items(), key=operator.itemgetter(1),reverse=True)
-	print(sorted_turns)
-	for who, val in sorted_turns:
-		if val < init_index:
-			init_index = val
-			await ctx.send("Now " + who + "'s turn.")
-			return
-	# reached the bottom, wrap around
-	init_index = 99
-	await ctx.send("New round!")
-	await next_turn(ctx)
 
 @client.command(pass_context=True)
 async def check(ctx, who, which, help = "-- Roll a check. Usage: $check name attribute"):
@@ -185,11 +184,11 @@ async def ping(ctx, help='-- Pong!'):
 # Warning: breaks if not given ints, don't use this format	
 # @client.command(name='roll', help='-- Simulates rolling X dice of Y sides. Usage: $roll X Y')
 # async def roll(ctx, number_of_dice: int, number_of_sides: int):
-    # dice = [
-        # str(random.choice(range(1, number_of_sides + 1)))
-        # for _ in range(number_of_dice)
-    # ]
-    # await ctx.send(', '.join(dice))
+	# dice = [
+		# str(random.choice(range(1, number_of_sides + 1)))
+		# for _ in range(number_of_dice)
+	# ]
+	# await ctx.send(', '.join(dice))
 
 
 @client.command(pass_context=True)
