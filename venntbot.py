@@ -90,9 +90,17 @@ def get_attr_val(who, which):
 		data = get_from_sheets(get_sheet_id(who), "Stats!B2:B10")
 		attr = which.upper()
 		attr_val = int(data[ATTRS.index(attr)][0])
-	elif which.upper() == "INIT" or which.upper() == "INITIATIVE":
-		data = get_from_sheets(get_sheet_id(who), "Stats!B19:B19")
-		attr = which.upper()
+	else:
+		cell = "Stats!"
+		if which.upper() == "INIT" or which.upper() == "INITIATIVE":
+			cell += "B19"
+		elif which.upper() == "HP":
+			cell += "B14"
+		elif which.upper() == "VIM":
+			cell += "B16"
+		elif which.upper() == "MP":
+			cell += "B17"
+		data = get_from_sheets(get_sheet_id(who), cell)
 		attr_val = int(data[0][0])
 	return attr_val
 
@@ -113,6 +121,12 @@ async def set(ctx, who, val, stat, help="Set HP MP or Vim. Usage: $set character
 	if stat == "MP":
 		cell += "B17"
 	update_to_sheets(get_sheet_id(who), cell, [[int(val)]])
+	
+	
+@client.command(pass_context=True)
+async def modify(ctx, who, val, stat, help="Modify HP MP or Vim. Usage: $set character amount stat"):
+	val = val + get_attr_val(who, stat)
+	await set(ctx, who, val, stat)
 	
 
 @client.command(pass_context=True)
