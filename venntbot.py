@@ -1,6 +1,6 @@
 from __future__ import print_function
 import discord, os, time, pickle, requests, json
-import re, operator, random, d20
+import re, operator, random, d20, datetime
 from bs4 import BeautifulSoup
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -52,6 +52,7 @@ with open("weapons.json") as f:
 with open("enemies.json") as f:
 	enemies = json.load(f)		
 
+start_time = time.time()
 
 turn_order = {} # who : value + 0.1 * score + 0.01* rand float for tie breaking
 init_index = 99
@@ -205,6 +206,10 @@ async def roll(ctx, *args, help = "Basic dice rolling parser. For flow, use 4d6k
 	r = d20.roll(rollstr)
 	await ctx.send(str(r))
 	return r.total
+
+@client.command(pass_context=True)
+async def uptime(ctx, help = "Get bot's lifespan"):
+	await ctx.send("I've been up for " + str(datetime.timedelta(seconds = (time.time() - start_time))))
 
 @client.command(pass_context=True)
 async def next_turn(ctx, help = "Advance the turn order"):
