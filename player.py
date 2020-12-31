@@ -1,27 +1,37 @@
 # --- Josh Aaron Miller 2020
 # --- Player class
-class Player:
+
+import importlib
+db = importlib.import_module("db")
+entity = importlib.import_module("entity")
+
+class Player(entity.Entity):
 	def __init__(self, name):
-		self.name = name
-		self.mods = []
+		super().__init__(name)
 		
-	def add_modifier(self, name, stat, val, stacks=False):
-		new_mod = {"name" : name, "stat" : stat, "val" : val}
-		stacked = False
-		if stacks:
-			for m in mods:
-				if m["name"] == name:
-					m["val"] += val
-					stacked = True
-		if not stacked:
-			mods.append(m)
-			
-	def get_modifier(self, name):
-		for m in mods:
-			if m["name"] == name:
-				return m["val"]
+		# unique to player:
+		if "mp" not in self.attrs:
+			self.attrs["mp"] = 0
+		if "hero" not in self.attrs:
+			self.attrs["hero"] = 0
 		
-	def remove_modifier(self, name):
-		for m in mods:
-			if m["name"] == name:
-				mods.remove(m)
+	# Write player stats to file
+	def write(self):
+		for key, val in self.attrs.items():
+			db.characters[name].key = val
+		save_characters()
+		
+	def read_from_file(self):
+		e = db.get_player_file(self.name)
+		for key, val in e.items():
+			if isinstance(val, int):
+				self.attrs[key] = val
+				
+				
+				
+				
+# init players
+for character in db.characters:
+	if character["name"] != "GM":
+		p = Player(character["name"])
+		db.PLAYERS.append(p)
