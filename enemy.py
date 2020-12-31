@@ -16,9 +16,12 @@ class Enemy(entity.Entity):
 	def display_name(self):
 		return self.name + str(self.id)
 		
+	def __str__(self):
+		ret = "[Enemy: " + self.name + "]"
+		
 	def read_from_file(self):
 		e = db.get_enemy_file(self.name)
-		self.dmg = e["dmg"]
+		self.dmg = e["DMG"]
 		for key, val in e.items():
 			if isinstance(val, int):
 				self.attrs[key] = val

@@ -35,7 +35,6 @@ async def on_command_error(ctx, error):
 	else:
 		await ctx.send("Oh, yikes! That's a new kind of error.\n" + str(error))
 		traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-
 	
 @client.event
 async def on_message(message):

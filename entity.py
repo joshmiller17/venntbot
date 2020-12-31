@@ -20,15 +20,24 @@ class Entity:
 		raise NotImplementedError
 		
 	def set_stat(self, stat, val):
+		stat = stat.upper()
 		self.attrs[stat] = val
 		
 	def mod_stat(self, stat, val):
+		stat = stat.upper()
 		self.attrs[stat] += val
 		
 	def get_stat(self, stat):
+		stat = stat.upper()
 		return self.attrs[stat]
 		
+	def more(self):
+		ret = self.name + "\n"
+		ret += str(self.attrs["HP"]) + " HP"
+		return ret
+		
 	def add_modifier(self, name, stat, val, stacks=False):
+		stat = stat.upper()
 		new_mod = {"name" : name, "stat" : stat, "val" : val}
 		stacked = False
 		if stacks:

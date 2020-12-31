@@ -14,6 +14,7 @@ SWORDS = '⚔️'
 RUNNING = '🏃'
 SKIP = '⏭️'
 REPEAT = '🔁'
+THINKING = '🤔'
 
 ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
 
@@ -61,5 +62,5 @@ def get_player_names():
 	return [character["name"] for character in characters if character["name"] != "GM"]
 	
 def save_characters():
-	with open("characters.json") as f:
-		json.dump(characters, f)
+	with open("characters.json", 'w') as f:
+		json.dump(characters, f, indent=4)

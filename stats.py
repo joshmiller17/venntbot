@@ -3,10 +3,11 @@
 import discord
 from discord.ext import commands
 
-import random
+import random, d20, math
 
 import importlib
 db = importlib.import_module("db")
+meta = importlib.import_module("meta")
 
 
 
@@ -20,11 +21,14 @@ def is_player(name):
 	return name in db.get_player_names()
 	
 def do_check(who ,attr): # internal call to check
-	print("Rolling " + attr + " check for " + who)
 	attr_val = db.find(who).get_stat(attr)
+	print("Rolling " + attr + " check for " + who + " with mod " + str(attr_val))
 	return d6() + d6() + d6() + attr_val
 	
-	
+def clean_modifier(v):
+	if isinstance(v, str):
+		v = dmg_mod.replace("+", "")
+	return int(v)
 	
 def compare_hp(current, max):
 	percent = (1.0 * current) / (1.0 * max)
@@ -42,6 +46,20 @@ def compare_hp(current, max):
 		return "near death"
 	return "dead"
 
+async def do_roll(ctx, *args):
+	rollstr = "".join(args[:]) # remove spaces
+	r = d20.roll(rollstr)
+	await ctx.send(str(r))
+	return r.total
+	
+async def do_examine(ctx, target):
+	if target == 'all':
+		for e in entities:
+			await do_examine(e.name)
+		return
+	status = compare_hp(db.find(target).get_stat("HP"), db.find(target).get_stat("MAX_HP"))
+	await ctx.send(target + " is looking " + status + "!")
+	
 
 class Stats(commands.Cog):
 	def __init__(self, bot):
@@ -49,7 +67,7 @@ class Stats(commands.Cog):
 
 	@commands.command(pass_context=True)
 	async def check(self, ctx, which, help = "Roll a check for your character."):
-		who = get_char_name(ctx.message.author)
+		who = meta.get_character_name(ctx.message.author)
 		attr_val = db.find(who).get_stat(attr)
 		d1 = d6()
 		d2 = d6()
@@ -66,17 +84,9 @@ class Stats(commands.Cog):
 
 	@commands.command(pass_context=True)
 	async def roll(self, ctx, *args, help = "Basic dice rolling parser. For flow, roll 4d6kh3 (roll 4, keep highest 3). Comments can go in brackets."):
-		rollstr = "".join(args[:]) # remove spaces
-		r = d20.roll(rollstr)
-		await ctx.send(str(r))
-		return r.total
+		await do_roll(ctx, *args)
 
 
 	@commands.command(pass_context=True)
 	async def examine(self, ctx, target, help = "Check how healthy someone is, or 'all' to check everyone."):
-		if target == 'all':
-			for e in entities:
-				await examine(e)
-			return
-		status = compare_hp(db.find(target).get_stat("HP"), db.find(target).get_stat("MAX_HP"))
-		await ctx.send(target + " is looking " + status + "!")
+		await do_examine(ctx, target)
