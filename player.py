@@ -5,9 +5,6 @@ import importlib
 db = importlib.import_module("db")
 entity = importlib.import_module("entity")
 
-ACTIONS_PER_TURN = 3
-REACTIONS_PER_TURN = 1
-
 class Player(entity.Entity):
 	def __init__(self, name):
 		super().__init__(name)
@@ -17,8 +14,6 @@ class Player(entity.Entity):
 			self.attrs["mp"] = 0
 		if "hero" not in self.attrs:
 			self.attrs["hero"] = 0
-		self.actions = ACTIONS_PER_TURN
-		self.reactions = REACTIONS_PER_TURN
 	
 	# Write player stats to file
 	def write(self):

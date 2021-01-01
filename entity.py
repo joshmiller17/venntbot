@@ -7,11 +7,17 @@ import importlib
 db = importlib.import_module("db")
 sheets = importlib.import_module("sheets")
 
+ACTIONS_PER_TURN = 3
+REACTIONS_PER_TURN = 1
+
 
 class Entity:
 	def __init__(self, name):
 		self.name = name
 		self.mods = []
+		
+		self.actions = ACTIONS_PER_TURN
+		self.reactions = REACTIONS_PER_TURN
 		
 		self.attrs = defaultdict(int)
 		self.read_from_file()
@@ -36,6 +42,9 @@ class Entity:
 		ret += str(self.attrs["HP"]) + " HP"
 		return ret
 		
+	#def can_afford(self, ...) # TODO
+		# do we have resources to buy this action etc?
+	
 	def add_modifier(self, name, stat, val, stacks=False):
 		stat = stat.upper()
 		new_mod = {"name" : name, "stat" : stat, "val" : val}

@@ -19,6 +19,7 @@ init_index = 99
 
 quick_action_message = None
 quick_reaction_message = None
+quick_ctx = None
 whose_turn = None
 
 	
@@ -41,7 +42,7 @@ def get_enemy(e):
 				print("Found enemy: ")
 				print(c.more())
 				return c
-				
+								
 async def apply_attack(ctx, target, dmg):
 	t = db.find(target)
 	armor = t.get_stat("ARMOR")
@@ -62,14 +63,17 @@ async def check_hit(ctx, acc, vim, dmg):
 	return dmg
 	
 async def suggest_quick_actions(ctx):
+	global quick_action_message, quick_ctx
 	m = await ctx.send("*(Quick actions: {0} Basic️ attack, {1} Move, {2} Repeat last action, {3} End turn.)*".format(db.SWORDS, db.RUNNING, db.REPEAT, db.SKIP))
 	await m.add_reaction(db.SWORDS)
 	await m.add_reaction(db.RUNNING)
 	await m.add_reaction(db.REPEAT)
 	await m.add_reaction(db.SKIP)
 	quick_action_message = m
+	quick_ctx = ctx
 
 async def suggest_quick_reactions(ctx):
+	global quick_reaction_message
 	m = await ctx.send("*(Quick reactions: {0} Dodge, {1} Block.)*".format(db.DASH, db.SHIELD))
 	await m.add_reaction(db.DASH)
 	await m.add_reaction(db.SHIELD)
@@ -79,33 +83,6 @@ class Combat(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 		
-	@commands.Cog.listener()
-	async def on_reaction_add(self, reaction, user):
-		#print(reaction.emoji)
-		print(reaction.message)
-		print(quick_action_message)
-		print ("your character is ")
-		print(meta.get_character_name(user))
-		if whose_turn is not None:
-			print("it's " + str(whose_turn) + "'s turn")
-		
-		
-	@commands.command(pass_context=True)
-	async def next_turn(self, ctx, help = "Advance the turn order"):
-		global turn_order, init_index
-		sorted_turns = sorted(turn_order.items(), key=operator.itemgetter(1),reverse=True)
-		print(sorted_turns)
-		for who, val in sorted_turns:
-			if val < init_index:
-				init_index = val
-				await ctx.send("Now " + who + "'s turn.")
-				whose_turn = who
-				await suggest_quick_actions(ctx)
-				return
-		# reached the bottom, wrap around
-		init_index = 99
-		await ctx.send("New round!")
-		await next_turn(ctx)
 		
 	async def add_turn_internal(self, ctx, display_name, who, result):
 		multiturn = 2
@@ -116,6 +93,49 @@ class Combat(commands.Cog):
 
 		turn_order[d_name] = int(result) + 0.01 * db.find(who).get_stat("INIT") + 0.001 * random.random()
 		await ctx.message.add_reaction(db.OK)
+		
+	@commands.Cog.listener()
+	async def on_reaction_add(self, reaction, user):
+		if user == self.bot.user:
+			return
+		if reaction.message == quick_action_message:
+			if meta.get_character_name(user) == whose_turn or meta.get_character_name(user) == "GM":
+				if reaction.emoji == db.SWORDS:
+					pass #TODO
+				if reaction.emoji == db.RUNNING:
+					pass #TODO
+				if reaction.emoji == db.REPEAT:
+					pass #TODO
+				if reaction.emoji == db.SKIP:
+					self.next_turn(quick_ctx)
+		if reaction.message == quick_reaction_message:
+			if meta.get_character_name(user) == whose_turn or meta.get_character_name(user) == "GM":
+				if reaction.emoji == db.DASH:
+					pass #TODO
+				if reaction.emoji == db.SHIELD:
+					pass #TODO
+
+		
+		
+	@commands.command(pass_context=True)
+	async def next_turn(self, ctx, help = "Advance the turn order."):
+		global turn_order, init_index
+		sorted_turns = sorted(turn_order.items(), key=operator.itemgetter(1),reverse=True)
+		print(sorted_turns)
+		for who, val in sorted_turns:
+			if val < init_index:
+				init_index = val
+				await ctx.send("Now " + who + "'s turn.")
+				whose_turn = who
+				entity = db.find(who)
+				entity.new_turn()
+				if isistance(entity, playerClass.Player):
+					await suggest_quick_actions(ctx)
+				return
+		# reached the bottom, wrap around
+		init_index = 99
+		await ctx.send("New round!")
+		await next_turn(ctx)
 		
 	@commands.command(pass_context=True)
 	async def add_enemies(self, ctx, num, name, help="Add X enemies to active combat."):
@@ -200,4 +220,7 @@ class Combat(commands.Cog):
 	async def attack(self, ctx, target, weapon, acc_mod=0, dmg_mod=0, help='Roll an attack with a weapon, optionally add Acc and Dmg modifiers.'):
 		who = meta.get_character_name(ctx.message.author)
 		await gm_attack(self, ctx, who, target, weapon, acc_mod, dmg_mod)
-	
+		
+	@commands.command(pass_context=True)
+	async def use(self, ctx, ability, help='Use an ability, spell, or item.'):
+		pass # TODO

@@ -14,7 +14,7 @@ start_time = time.time()
 
 def get_character_name(username):
 	for character in db.characters:
-		if character["played_by"] == username:
+		if character["played_by"] == str(username):
 			return character["name"]
 	print("ERROR: no name found for " + str(username))
 	return ""
