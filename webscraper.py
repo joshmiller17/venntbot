@@ -11,7 +11,7 @@ db = importlib.import_module("db")
 # Returns list of matches and URL string (if found)
 def find_ability(*args):
 	ability = " ".join(args[:])
-	print("Looking for " + ability)
+	print("webscraper.find_ability: Looking for " + ability)
 	approximations = []
 	URL = ""
 	for a in db.abilities:
@@ -33,7 +33,7 @@ def get_ability_contents(ability, URL):
 	last_had_newline = False
 	for hit in soup.find_all('p'):
 		text = hit.get_text()
-		if ability in text:
+		if ability == text[:-1]:
 			found = True
 		if found and (text.isspace() or (text.startswith('\n') and last_had_newline)):
 			return contents

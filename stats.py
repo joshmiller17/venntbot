@@ -20,9 +20,11 @@ def half(num):
 def is_player(name):
 	return name in db.get_player_names()
 	
-def do_check(who ,attr): # internal call to check
-	attr_val = db.find(who).get_stat(attr)
-	print("Rolling " + attr + " check for " + who + " with mod " + str(attr_val))
+def do_check(who, attr): # internal call to check; allow entity or name
+	if isinstance(who, str):
+		who = db.find(who)
+	attr_val = who.get_stat(attr)
+	print("stats.do_check: Rolling " + attr + " check for " + who.name + " with mod " + str(attr_val))
 	return d6() + d6() + d6() + attr_val
 	
 def clean_modifier(v):
@@ -45,6 +47,11 @@ def compare_hp(current, max):
 	if percent > 0:
 		return "near death"
 	return "dead"
+	
+def get_status(who):
+	print("stats.get_status: " + who)
+	e = db.find(who)
+	return compare_hp(e.get_stat("HP"), e.get_stat("MAX_HP"))
 
 async def do_roll(ctx, *args):
 	rollstr = "".join(args[:]) # remove spaces
@@ -57,7 +64,7 @@ async def do_examine(ctx, target):
 		for e in entities:
 			await do_examine(e.name)
 		return
-	status = compare_hp(db.find(target).get_stat("HP"), db.find(target).get_stat("MAX_HP"))
+	status = get_status(target)
 	await ctx.send(target + " is looking " + status + "!")
 	
 

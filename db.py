@@ -15,6 +15,8 @@ RUNNING = '🏃'
 SKIP = '⏭️'
 REPEAT = '🔁'
 THINKING = '🤔'
+NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣ ', '8️⃣', '9️⃣']
+MORE = '➡️'
 
 ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
 
@@ -30,6 +32,13 @@ with open("weapons.json") as f:
 	weapons = json.load(f)
 with open("enemies.json") as f:
 	enemies = json.load(f)
+	
+def is_number_emoji(emoji):
+	print(emoji)
+	for n in NUMBERS:
+		if str(emoji) == str(n):
+			return True
+	return False
 	
 def find(name):
 	for e in ENEMIES:

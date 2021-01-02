@@ -8,6 +8,7 @@ entity = importlib.import_module("entity")
 class Player(entity.Entity):
 	def __init__(self, name):
 		super().__init__(name)
+		self.primary_weapon = None
 	
 	# Write player stats to file
 	def write(self):
@@ -25,7 +26,8 @@ class Player(entity.Entity):
 		for key, val in e.items():
 			if isinstance(val, int):
 				self.attrs[key] = val
-				
+			if key == "primary_weapon":
+				self.primary_weapon = val
 				
 	def __str__(self):
 		ret = "[Player: " + self.name + "]"

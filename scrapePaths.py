@@ -39,12 +39,13 @@ def getAbilities(url):
 	page = BeautifulSoup(page,features="lxml")
 
 	#get the abilities section and pull out the text of each
-	# <p> tag in it, removing the non-completion requirement descriptors
-	# and prereq descriptors
+	# <p> tag in it, removing the non-completion requirement descriptors,
+	# prereq descriptors, and activation costs
 	abilitySection = page.find("div",{"class":"mw-parser-output"})
 	pTags = [p.text.strip() for p in abilitySection.find_all("p")]
 	pTags = [p for p in pTags if "This ability is not required for the Path Completion Bonus." not in p]
-	pTags = [p for p in pTags if not p.startswith("Prerequisite")]
+	pTags = [p for p in pTags if not "Prerequisite" in p]
+	pTags = [p for p in pTags if not "Activation:" in p]
 
 	#iterate through all the <p> tags finding those that
 	# either immediately precede an "Unlocks: " line or a

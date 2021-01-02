@@ -59,6 +59,7 @@ def make_ability(name):
 		parsed_name = True
 			
 	ret =  Ability(name, contents, purchase_cost=pur_cost, activation_cost=act_cost, effect=eff, unlocks=unlock, prerequisites=prereq, expedited_for=exp_for, mp_costs=m_cost, casting_dl=cast_dl, range=ability_range)
+	print("ability.make_ability:")
 	print(ret)
 	return ret
 	
@@ -73,6 +74,7 @@ def parse_unlocks(line):
 	return line[9:-1] # just get string for now
 	
 def parse_prereq(line):
+	print("ability.parse_prereq:")
 	print(line[12])
 	print(line[13])
 	print(line[14])
@@ -82,27 +84,20 @@ def parse_prereq(line):
 		return line[15:-1] # just get string for now
 
 def parse_mp_costs(line):
-	matches = re.findall("\[ ?(\d*) ?\/ ?(\d*) ?\/ ?(\d*) ?\]")
+	matches = re.findall("\[ ?(\d*) ?\/ ?(\d*) ?\/ ?(\d*) ?\]", line)
 	for match_tuple in matches:
-		print("MP cost tuple is")
-		print(match_tuple)
-		print("returning")
-		print(match_tuple[1:3])
-		return match_tuple[1:3]
+		return match_tuple[0:3]
 
 def parse_casting_dl(line):
-	matches = re.findall("\[ ?(\d*) ?\/ ?(\d*) ?\/ ?(\d*) ?\]")
+	matches = re.findall("\[ ?(\d*) ?\/ ?(\d*) ?\/ ?(\d*) ?\]", line)
 	for match_tuple in matches:
-		print("casting DL tuple is")
-		print(match_tuple)
-		print("returning")
-		print(match_tuple[1:3])
-		return match_tuple[1:3]
+		return match_tuple[0:3]
 
 def parse_activation_cost(line):
 	cost = {}
 	matches = re.findall("Activation: ((?:Passive)|(\d Actions?)|(Attack)|(?:, )|(\d*\**X? Actions?)|(\d*\**X? Reactions?)|(\d*\**X? Vim)|(\d*\**X? MP))*", line)
 	for match_tuple in matches:
+		print("ability.parse_activation_cost:")
 		print("cost tuple is")
 		print(match_tuple)
 		for match in match_tuple:
@@ -143,12 +138,12 @@ class Ability():
 	
 	def __str__(self):
 		ret = "[" + self.name + "]\n"
-		ret += "-- Cost: " + self.purchase_cost + "\n"
-		ret += "-- Expedited for: " + self.expedited + "\n"
+		ret += "-- Cost: " + str(self.purchase_cost) + "\n"
+		ret += "-- Expedited for: " + str(self.expedited) + "\n"
 		if self.is_spell:
 			ret += "-- MP Cost: " + str(self.mp_costs) + "\n"
 			ret += "-- Casting DL: " + str(self.casting_dl) + "\n"
 		if self.range is not None:
-			ret += "-- Range: " + self.range + "\n"
+			ret += "-- Range: " + str(self.range) + "\n"
 		ret += "-- Effect: " + self.effect + "\n"
 		return ret

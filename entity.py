@@ -42,8 +42,105 @@ class Entity:
 		ret += str(self.attrs["HP"]) + " HP"
 		return ret
 		
-	#def can_afford(self, ...) # TODO
-		# do we have resources to buy this action etc?
+	def new_turn(self):
+		self.actions = ACTIONS_PER_TURN
+		self.reactions = REACTIONS_PER_TURN
+		
+	# do we have these resources
+	def can_afford(self, cost):
+		for key, val in cost.items():
+			try:
+				val = int(val)
+			except ValueError:
+				pass
+			if not isinstance(val, int):
+				print("entity.can_afford ignoring " + key + ": " + str(val))
+				continue # ignore X, *, Attack, Passive, etc
+			if key == 'A':
+				if self.actions < val:
+					print("A " + str(self.actions) + " < " + str(val))
+					return False
+			if key == 'R':
+				if self.reactions < val:
+					print("A " + str(self.reactions) + " < " + str(val))
+					return False
+			if key == 'M':
+				if self.attrs["MP"] < val:
+					print("A " + str(self.attrs["MP"]) + " < " + str(val))
+					return False
+			if key == 'V':
+				if self.attrs["VIM"] < val:
+					print("A " + str(self.attrs["VIM"]) + " < " + str(val))
+					return False
+			# TODO Health and Hero Points
+		return True
+		
+	
+	async def change_resource_verbose(self, key, delta):
+		if key == 'A':
+			self.actions += delta
+			await ctx.send(str(self.actions) + " Action(s) left")
+		if key == 'R':
+			self.reactions += delta
+			await ctx.send(str(self.reactions) + " Reaction(s) left")
+		if key == 'M':
+			self.attrs["MP"] += delta
+			await ctx.send(str(self.attrs["MP"]) + " MP left")
+		if key == 'V':
+			self.attrs["VIM"] += delta
+			await ctx.send(str(self.attrs["VIM"]) + " Vim left")
+		# TODO Health and Hero Points
+			
+	def change_resource(self, key, delta):
+		if key == 'A':
+			self.actions += delta
+		if key == 'R':
+			self.reactions += delta
+		if key == 'M':
+			self.attrs["MP"] += delta
+		if key == 'V':
+			self.attrs["VIM"] += delta
+		# TODO Health and Hero Points
+		
+		
+	def use_resources(self, cost):
+		able_to_calculate = True
+		for key, val in cost.items():
+			try:
+				val = int(val)
+			except ValueError:
+				pass
+			if not isinstance(val, int):
+				print("entity.use_resources ignoring " + key + ": " + str(val))
+				if key == 'A' or key == 'R' or key == 'M' or key == 'V': # should be able to parse
+					able_to_calculate = False
+				continue # ignore X, *, Attack, Passive, etc
+			self.change_resource(key, -1 * val)
+		return able_to_calculate
+		
+	def add_resources(self, resources):
+		for key, val in resources.items():
+			self.change_resource(key, val)
+			
+	async def add_resources_verbose(self, resources):
+		for key, val in resources.items():
+			await self.change_resource_verbose(key, val)
+		
+	async def use_resources_verbose(self, ctx, cost):
+		able_to_calculate = True
+		for key, val in cost.items():
+			try:
+				val = int(val)
+			except ValueError:
+				pass
+			if not isinstance(val, int):
+				print("entity.use_resources ignoring " + key + ": " + str(val))
+				if key == 'A' or key == 'R' or key == 'M' or key == 'V': # should be able to parse
+					able_to_calculate = False
+				continue # ignore X, *, Attack, Passive, etc
+			await self.change_resource_verbose(key, -1 * val)
+		return able_to_calculate
+		
 	
 	def add_modifier(self, name, stat, val, stacks=False):
 		stat = stat.upper()
