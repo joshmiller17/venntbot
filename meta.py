@@ -4,11 +4,13 @@
 import discord
 from discord.ext import commands
 
-import time, requests, datetime
-from bs4 import BeautifulSoup
+import time, datetime
 
 import importlib
 db = importlib.import_module("db")
+webscraper = importlib.import_module("webscraper")
+abilityClass = importlib.import_module("ability")
+
 
 start_time = time.time()
 
@@ -18,7 +20,8 @@ def get_character_name(username):
 			return character["name"]
 	print("ERROR: no name found for " + str(username))
 	return ""
-
+	
+			
 class Meta(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
@@ -31,42 +34,38 @@ class Meta(commands.Cog):
 	@commands.command(pass_context=True)
 	async def uptime(self, ctx, help = "Get bot's lifespan"):
 		await ctx.send("I've been up for " + str(datetime.timedelta(seconds = (time.time() - start_time))))
-
+		
+	@commands.command(pass_context=True)
+	async def cost(self, ctx, *args, help = "Get an ability's cost."):
+		name = " ".join(args[:])
+		ability = abilityClass.get_ability(name)
+		await ctx.send(str(ability.cost))
 
 	@commands.command(pass_context=True)
 	async def whatis(self, ctx, *args, help="Get an ability's info. Usage: $whatis ABILITY. Example: $whatis Basic Cooking"):
-		ability = " ".join(args[:])
-		found = False
-		approximations = []
-		for a in abilities:
-			if ability.lower() in a["ability"].lower(): # approximate
-				if a["ability"].lower() == ability.lower():
-					URL = a["url"]
-					found = True
-					break
-				else:
-					approximations.append(a["ability"])
-					URL = a["url"]
-		if len(approximations) == 1:
-			found = True
-		if not found:
-			if approximations != []:
-				await ctx.send("Did you mean: " + " or ".join(approximations))
-			else:
-				await ctx.send("No ability found named " + ability)
-			return
+		matches, URL = webscraper.find_ability(*args)
+		if len(matches) == 1:
+			contents = webscraper.get_ability_contents(matches[0], URL)
+			contents.append("From: <" + URL + ">")
+			# ----- split contents into msgs < 2000 char
+			msg_length = 0
+			msg = ""
+			if contents == []:
+				await ctx.send("I found that ability but I didn't see any description for it.")
+			for line in contents:
+				line_len = len(line)
+				if msg_length + line_len > 1800:
+					await ctx.send(msg)
+					msg_length = 0
+					msg = ""
+				msg += line
+				msg_length += line_len
+			if msg_length > 0:
+				await ctx.send(msg)
+			# ----- end sending msg
+		elif len(matches) > 1:
+			await ctx.send("Did you mean: " + " or ".join(matches))
 		else:
-			page = requests.get(URL)
-			soup = BeautifulSoup(page.content, 'html.parser')
-			# FIXME? sends every line as a separate message to avoid 2000 char limit, but could be smarter about this
-			printing = False
-			for hit in soup.find_all('p'):
-				text = hit.get_text()
-				if ability in text:
-					printing = True
-				if text.isspace() or "<br>" in text:
-					printing = False
-				if printing:
-					await ctx.send(text)
-			await ctx.send("From: <" + URL + ">")
+			ability = " ".join(args[:])
+			await ctx.send("No ability found: " + ability)
 	

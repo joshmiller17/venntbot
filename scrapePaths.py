@@ -44,7 +44,7 @@ def getAbilities(url):
 	abilitySection = page.find("div",{"class":"mw-parser-output"})
 	pTags = [p.text.strip() for p in abilitySection.find_all("p")]
 	pTags = [p for p in pTags if "This ability is not required for the Path Completion Bonus." not in p]
-	pTags = [p for p in pTags if not p.startswith("Prerequisite:")]
+	pTags = [p for p in pTags if not p.startswith("Prerequisite")]
 
 	#iterate through all the <p> tags finding those that
 	# either immediately precede an "Unlocks: " line or a

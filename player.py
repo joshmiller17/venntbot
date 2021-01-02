@@ -8,12 +8,6 @@ entity = importlib.import_module("entity")
 class Player(entity.Entity):
 	def __init__(self, name):
 		super().__init__(name)
-		
-		# unique to player:
-		if "mp" not in self.attrs:
-			self.attrs["mp"] = 0
-		if "hero" not in self.attrs:
-			self.attrs["hero"] = 0
 	
 	# Write player stats to file
 	def write(self):
@@ -35,6 +29,7 @@ class Player(entity.Entity):
 				
 	def __str__(self):
 		ret = "[Player: " + self.name + "]"
+		return ret
 				
 # init players
 for character in db.characters:
