@@ -23,8 +23,7 @@ def get_ability(name):
 def make_ability(name):
 	approximations, URL = webscraper.find_ability(name)
 	if len(approximations) != 1:
-		print("ERROR: bad call to ability.make_ability, incorrect number of approximations: " + str(len(approximations)))
-		raise ValueError()
+		raise ValueError("Bad call to ability.make_ability, incorrect number of approximations (" + str(len(approximations)) + "): " + ", ".join(approximations))
 	contents = webscraper.get_ability_contents(name, URL)
 	pur_cost = None
 	act_cost = None
