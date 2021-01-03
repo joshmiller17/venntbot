@@ -3,6 +3,8 @@
 
 import json
 
+# style: globals are in all caps
+
 # Emojis
 OK = '👍'
 NOT_OK = '🚫' #'👎'

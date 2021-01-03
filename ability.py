@@ -6,16 +6,16 @@ import re
 import importlib
 webscraper = importlib.import_module("webscraper")
 
-
-ability_cache = {} # name : Ability
+# style: globals are in all caps
+ABILITY_CACHE = {} # name : Ability
 
 def get_ability(name):
-	for key, value in ability_cache.items():
+	for key, value in ABILITY_CACHE.items():
 		if key == name:
 			return value
 	# cache miss
 	new_ability = make_ability(name)
-	ability_cache[name] = new_ability
+	ABILITY_CACHE[name] = new_ability
 	return new_ability
 	
 # Input: ability name

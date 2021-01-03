@@ -71,10 +71,9 @@ async def do_examine(ctx, target):
 class Stats(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot	
-
+		
 	@commands.command(pass_context=True)
-	async def check(self, ctx, which, help = "Roll a check for your character."):
-		who = meta.get_character_name(ctx.message.author)
+	async def gm_check(self, ctx, who, stat, help = "Roll a check for someone."):
 		attr_val = db.find(who).get_stat(attr)
 		d1 = d6()
 		d2 = d6()
@@ -82,6 +81,33 @@ class Stats(commands.Cog):
 		res = d1+d2+d3+attr_val
 		await ctx.send(who + "'s " + which.upper() + " check: **" + str(res) +
 		"** ({0},{1},{2} + {3})".format(d1,d2,d3,attr_val))
+
+	@commands.command(pass_context=True)
+	async def check(self, ctx, stat, help = "Roll a check for your character."):
+		who = meta.get_character_name(ctx.message.author)
+		await self.gm_check(ctx, who, stat)
+
+	@commands.command(pass_context=True)
+	async def gm_set(self, ctx, who, stat, value, help="Set a stat."):
+		value = clean_modifier(value)
+		entity = db.find(who)
+		setattr(entity, stat, value)
+		
+	@commands.command(pass_context=True)
+	async def gm_modify(self, ctx, who, stat, value, help="Modify a stat."):
+		value = clean_modifier(value)
+		entity = db.find(who)
+		setattr(entity, stat, value + getattr(entity, stat))
+	
+	@commands.command(pass_context=True)
+	async def set(self, ctx, stat, value, help="Set your stat."):
+		who = meta.get_character_name(ctx.message.author)
+		await self.gm_set(ctx, who, stat, value)
+		
+	@commands.command(pass_context=True)
+	async def modify(self, ctx, stat, value, help="Modify your stat."):
+		who = meta.get_character_name(ctx.message.author)
+		await self.gm_modify(ctx, who, stat, value)
 
 
 	@commands.command(pass_context=True)

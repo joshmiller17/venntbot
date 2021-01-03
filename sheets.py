@@ -14,6 +14,8 @@ db = importlib.import_module("db")
 stats = importlib.import_module("stats")
 meta = importlib.import_module("meta")
 
+# style: globals are in all caps
+
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -96,7 +98,7 @@ class Sheets(commands.Cog):
 		self.bot = bot
 
 	@commands.command(pass_context=True)
-	async def set(self, ctx, who, amount, stat, help="Set a stat on a character sheet. Players can only use 'me' or their name."):
+	async def set_sheet(self, ctx, who, amount, stat, help="Set a stat on a character sheet. Players can only use 'me' or their name."):
 		char_name = meta.get_character_name(ctx.message.author)
 		if char_name != "GM" and who != "me" and who != char_name:
 			await ctx.message.add_reaction(db.NOT_OK)
@@ -105,7 +107,7 @@ class Sheets(commands.Cog):
 		await set_stat(ctx, who, amount, stat)
 		
 	@commands.command(pass_context=True)
-	async def modify(self, ctx, who, amount, stat, help="Modify a stat on a character sheet."):
+	async def modify_sheet(self, ctx, who, amount, stat, help="Modify a stat on a character sheet."):
 		char_name = meta.get_character_name(ctx.message.author)
 		if char_name != "GM" and who != "me" and who != char_name:
 			ctx.message.add_reaction(db.NOT_OK)
@@ -113,8 +115,6 @@ class Sheets(commands.Cog):
 		amount = int(amount.replace("+", ""))
 		amount = amount + await get(self, ctx, who, stat)
 		await set_stat(ctx, who, amount, stat)
-		
-	
 
 	@commands.command(pass_context=True)
 	async def get(self, ctx, who, stat, help="See a stat value."):
