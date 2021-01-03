@@ -76,7 +76,7 @@ class Entity:
 		return True
 		
 	
-	async def change_resource_verbose(self, key, delta):
+	async def change_resource_verbose(self, ctx, key, delta):
 		if key == 'A':
 			self.actions += delta
 			await ctx.send(str(self.actions) + " Action(s) left")
@@ -138,7 +138,7 @@ class Entity:
 				if key == 'A' or key == 'R' or key == 'M' or key == 'V': # should be able to parse
 					able_to_calculate = False
 				continue # ignore X, *, Attack, Passive, etc
-			await self.change_resource_verbose(key, -1 * val)
+			await self.change_resource_verbose(ctx, key, -1 * val)
 		return able_to_calculate
 		
 	

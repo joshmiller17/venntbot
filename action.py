@@ -16,10 +16,10 @@ class Action:
 	
 	def __init__(self, type):
 		self.type = type
-		self.effects = []
-		self.entities = []
+		self.effects = {}
+		self.entities = {}
 		
-	def add_effect(role, entity, cost):
+	def add_effect(self, role, entity, cost):
 		self.effects[role] = cost
 		self.entities[role] = entity
 		print("Action.add_effect: recorded " + entity.name + " changed " + str(cost))

@@ -70,11 +70,12 @@ async def suggest_quick_actions(ctx, entity):
 	global quick_action_message, quick_ctx
 	available_actions = {"Repeat": db.REPEAT, "Basic attack" : db.SWORDS, "Move" : db.RUNNING, "End turn" : db.SKIP}
 	actions_left = entity.actions
-	if last_action is None:
+	if entity.primary_weapon is None:
+		available_actions.pop('Basic attack', None)
+	if True: # TODO
 		available_actions.pop('Repeat', None)
 	if actions_left < 2:
-		if entity.primary_weapon is not None:
-			available_actions.pop('Basic attack', None)
+		available_actions.pop('Basic attack', None)
 		if actions_left < 1:
 			available_actions.pop('Move', None)
 	ret = []
@@ -117,12 +118,14 @@ class Combat(commands.Cog):
 			enemy_list.append(e.display_name() + " - " + stats.get_status(e.display_name()))
 		enemy_reaction_map = {}
 		count = 0
+		has_more = False
 		for e in enemy_list:
 			if offset > 0:
 				offset -= 1
 				continue
 			if count > 8:
 				enemy_reaction_map["More..."] = db.MORE
+				has_more = True
 				break
 			enemy_reaction_map[e] = db.NUMBERS[count]
 			count += 1
@@ -134,38 +137,38 @@ class Combat(commands.Cog):
 		m = await ctx.send("Attack who?\n```{0}\n```".format("\n".join(ret)))
 		for i in range(count):
 			await m.add_reaction(db.NUMBERS[i])
+		if has_more:
+			await m.add_reaction(db.MORE)
 		quick_action_message = m
 		enemy_list_offset += 9
 	
 	@commands.Cog.listener()
 	async def on_reaction_add(self, reaction, user):
-		print("combat.on_reaction_add: " + whose_turn + "'s turn")
 		global enemy_list_offset
 		if user == self.bot.user:
 			return
 		if reaction.message == quick_action_message:
-			print("combat.on_reaction_add: correct message")
 			if meta.get_character_name(user) == whose_turn or meta.get_character_name(user) == "GM":
-				print("combat.on_reaction_add: correct person")
 				if reaction.emoji == db.MORE: # assume we're doing basic attack
 					await self.make_enemy_list(quick_ctx, enemy_list_offset)
 				if reaction.emoji == db.SWORDS:
 					enemy_list_offset = 0
 					await self.make_enemy_list(quick_ctx, enemy_list_offset)
 				if db.is_number_emoji(reaction.emoji):
-					print("Chose an enemy!")
 					enemy_list_offset -= 9
 					enemy_index = db.NUMBERS.index(reaction.emoji) + enemy_list_offset
 					target = db.ENEMIES[enemy_index]
-					await self.gm_attack(quick_ctx, whose_turn, target, db.find(whose_turn).primary_weapon)
+					await self.gm_attack(quick_ctx, whose_turn, target.display_name(), db.find(whose_turn).primary_weapon)
+					await suggest_quick_actions(quick_ctx, db.find(whose_turn)) 
 				if reaction.emoji == db.RUNNING:
-					success = await user.use_resources_verbose(quick_ctx, {'A':1})
-					await quick_ctx.message.send(whose_turn + " moved.")
-					await suggest_quick_actions(ctx, db.find(whose_turn))
+					entity = db.find(whose_turn)
+					success = await entity.use_resources_verbose(quick_ctx, {'A':1})
+					await quick_ctx.send(whose_turn + " moved.")
+					await suggest_quick_actions(quick_ctx, db.find(whose_turn))
 				if reaction.emoji == db.REPEAT:
 					pass #TODO
 				if reaction.emoji == db.SKIP:
-					self.next_turn(quick_ctx)
+					await self.next_turn(quick_ctx)
 					print("Next turn")
 		if reaction.message == quick_reaction_message:
 			if meta.get_character_name(user) == whose_turn or meta.get_character_name(user) == "GM":
@@ -248,6 +251,7 @@ class Combat(commands.Cog):
 
 	@commands.command(pass_context=True)
 	async def enemy_attack(self, ctx, attacker, target, help='Usage: $enemy_attack attacker target'):
+		global last_action
 		await ctx.send(attacker + " attacks " + target + "!")
 		total = await stats.do_roll(ctx, db.find(attacker).dmg)
 		
@@ -264,9 +268,9 @@ class Combat(commands.Cog):
 		
 	@commands.command(pass_context=True)
 	async def gm_attack(self, ctx, who, target, weapon, acc_mod="+0", dmg_mod="+0", help="Roll someone's attack with a weapon. For GM use only."):
+		global last_action
+		print("combat.gm_attack: " + str(who) + " " + str(target) + " " + str(weapon))
 		found = False
-		dmg_mod = stats.clean_modifier(dmg_mod)
-		acc_mod = stats.clean_modifier(acc_mod)
 		for w in db.weapons:
 			if w["name"] == weapon:
 				w_attr = w["attr"]
@@ -275,7 +279,7 @@ class Combat(commands.Cog):
 				break
 				
 		if not found:
-			ctx.send("Unrecognized weapon: " + weapon + ".")
+			await ctx.send("Unrecognized weapon: " + str(weapon) + ".")
 			return
 			
 		atkr = db.find(who)
@@ -284,7 +288,8 @@ class Combat(commands.Cog):
 		vim = db.find(target).get_stat("VIM")
 		
 		last_action = act.Action("attack")
-		last_action.add_effect(act.ActionRole.USER, atkr, {})
+		last_action.add_effect(act.ActionRole.USER, atkr, {"A":2})
+		atkr.actions -= 2
 		
 		await ctx.send(who + " attacks " + target + " with a " + weapon + "!")
 		total = await stats.do_roll(ctx, w_dmg + "+" + str(val))
@@ -298,7 +303,8 @@ class Combat(commands.Cog):
 		
 	@commands.command(pass_context=True)
 	async def gm_use(self, ctx, who, *ability, help="Use someone's ability. For GM use only."): # TODO allow the use of items
-		abiObj = abilityClass.get_ability(ability)
+		global last_action
+		abiObj = abilityClass.get_ability(" ".join(ability[:])
 		user = db.find(who)
 		if not user.can_afford(abiObj.cost):
 			await ctx.send(who + " can't afford " + abiObj.name) # TODO add more details of why
@@ -314,10 +320,11 @@ class Combat(commands.Cog):
 	@commands.command(pass_context=True)
 	async def use(self, ctx, *ability, help='Use an ability.'): # TODO allow the use of items
 		who = meta.get_character_name(ctx.message.author)
-		await self.gm_use(ctx, who, ability)
+		await self.gm_use(ctx, who, ability[:])
 		
 	@commands.command(pass_context=True)
 	async def gm_cast(self, ctx, who, strength="normal", *spell, help="Cast someone's spell. For GM use only."):
+		global last_action
 		spell = " ".join(spell[:])
 		abiObj = abilityClass.get_ability(spell)
 		user = db.find(who)

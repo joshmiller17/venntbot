@@ -29,7 +29,7 @@ def do_check(who, attr): # internal call to check; allow entity or name
 	
 def clean_modifier(v):
 	if isinstance(v, str):
-		v = dmg_mod.replace("+", "")
+		v = v.replace("+", "")
 	return int(v)
 	
 def compare_hp(current, max):
