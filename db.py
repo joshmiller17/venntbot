@@ -74,3 +74,7 @@ def get_player_names():
 def save_characters():
 	with open("characters.json", 'w') as f:
 		json.dump(characters, f, indent=4)
+		
+def save_weapons():
+	with open("weapons.json", 'w') as f:
+		json.dump(weapons, f, indent=4)

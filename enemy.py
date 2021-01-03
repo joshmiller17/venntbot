@@ -14,7 +14,7 @@ class Enemy(entity.Entity):
 		super().__init__(name)
 				
 	def display_name(self):
-		return self.name + str(self.id)
+		return self.name + (str(self.id) if self.id > 1 else "")
 		
 	def __str__(self):
 		ret = "[Enemy: " + self.name + "]"

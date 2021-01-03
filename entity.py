@@ -122,9 +122,9 @@ class Entity:
 		for key, val in resources.items():
 			self.change_resource(key, val)
 			
-	async def add_resources_verbose(self, resources):
+	async def add_resources_verbose(self, ctx, resources):
 		for key, val in resources.items():
-			await self.change_resource_verbose(key, val)
+			await self.change_resource_verbose(ctx, key, val)
 		
 	async def use_resources_verbose(self, ctx, cost):
 		able_to_calculate = True

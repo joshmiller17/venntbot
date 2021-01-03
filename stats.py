@@ -55,7 +55,8 @@ def get_status(who):
 
 async def do_roll(ctx, *args):
 	rollstr = "".join(args[:]) # remove spaces
-	r = d20.roll(rollstr)
+	print("stats.do_roll: " + rollstr)
+	r = d20.roll(rollstr, allow_comments=True)
 	await ctx.send(str(r))
 	return r.total
 	
@@ -71,6 +72,10 @@ async def do_examine(ctx, target):
 class Stats(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot	
+		
+	@commands.command(pass_context=True)
+	async def half(self, ctx, num):
+		await ctx.send("```{0} / 2 = **{1}**```".format(num, half(num)))
 		
 	@commands.command(pass_context=True)
 	async def gm_check(self, ctx, who, stat, help = "Roll a check for someone."):
@@ -91,13 +96,28 @@ class Stats(commands.Cog):
 	async def gm_set(self, ctx, who, stat, value, help="Set a stat."):
 		value = clean_modifier(value)
 		entity = db.find(who)
-		setattr(entity, stat, value)
+		if stat.lower() == "action":
+			stat = "actions"
+		if stat.lower() == "reaction":
+			stat = "reactions"
+		if stat == "actions" or stat == "reactions":
+			setattr(entity, stat, value)
+		else:
+			entity.attrs[stat] = value
 		
-	@commands.command(pass_context=True)
-	async def gm_modify(self, ctx, who, stat, value, help="Modify a stat."):
+	@commands.command(pass_context=True, alises=['gm_spend'])
+	async def gm_modify(self, ctx, who, value, stat, help="Modify a stat."):
 		value = clean_modifier(value)
 		entity = db.find(who)
-		setattr(entity, stat, value + getattr(entity, stat))
+		if stat.lower() == "action":
+			stat = "actions"
+		if stat.lower() == "reaction":
+			stat = "reactions"
+		if stat == "actions" or stat == "reactions":
+			setattr(entity, stat, value + getattr(entity, stat))
+		else:
+			entity.attrs[stat] += value
+		await ctx.message.add_reaction(db.OK)
 	
 	@commands.command(pass_context=True)
 	async def set(self, ctx, stat, value, help="Set your stat."):
@@ -105,10 +125,19 @@ class Stats(commands.Cog):
 		await self.gm_set(ctx, who, stat, value)
 		
 	@commands.command(pass_context=True)
-	async def modify(self, ctx, stat, value, help="Modify your stat."):
+	async def gm_spend(self, ctx, who, value, stat, help="Spend someone's stat. For GM use only."):
+		value = clean_modifier(value)
+		await self.gm_modify(ctx, who, -1 * value, stat)
+		
+	@commands.command(pass_context=True)
+	async def spend(self, ctx, value, stat, help="Spend a stat."):
 		who = meta.get_character_name(ctx.message.author)
-		await self.gm_modify(ctx, who, stat, value)
-
+		await self.gm_modify(ctx, who, -1 * value, stat)
+		
+	@commands.command(pass_context=True)
+	async def modify(self, ctx, value, stat, help="Modify your stat."):
+		who = meta.get_character_name(ctx.message.author)
+		await self.gm_modify(ctx, who, value, stat)
 
 	@commands.command(pass_context=True)
 	async def attr(self, ctx, who, which, help="Get someone's attributes. Usage: $who name attribute"):
