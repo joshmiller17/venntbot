@@ -1,7 +1,7 @@
 # --- Josh Aaron Miller 2020
 # --- main run for Discord Vennt Bot
 import discord
-import os, sys, traceback
+import os, sys, traceback, json, time
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -13,6 +13,11 @@ meta = importlib.import_module("meta")
 combat = importlib.import_module("combat")
 sheets = importlib.import_module("sheets")
 stats = importlib.import_module("stats")
+enemyhandler = importlib.import_module("enemyhandler")
+initiative = importlib.import_module("initiative")
+gm = importlib.import_module("gm")
+communication = importlib.import_module("communication")
+
 
 # Discord setup
 load_dotenv()
@@ -46,10 +51,27 @@ async def on_message(message):
 			await message.author.send("Goodbye.")
 			print("Goodbye")
 			await client.close()
+		if (message.content == "test"):
+			await message.author.send("Running all tests:")
+			altered = message
+			with open("tests.json") as f:
+				tests = json.load(f)
+			for module in tests:
+				await message.author.send("**{0}**".format(module["name"]))
+				for cmd in module["cmds"]:
+					altered.content = cmd
+					await message.author.send("`> " + cmd + "`")
+					await client.on_message(altered)
+					time.sleep(1)
+			await message.author.send("Done.")
 			
 client.add_cog(meta.Meta(client))
 client.add_cog(sheets.Sheets(client))
 client.add_cog(stats.Stats(client))
 client.add_cog(combat.Combat(client))
+client.add_cog(gm.GM(client))
+client.add_cog(enemyhandler.EnemyHandler(client))
+client.add_cog(initiative.Initiative(client))
+client.add_cog(communication.Communication(client))
 
 client.run(TOKEN)

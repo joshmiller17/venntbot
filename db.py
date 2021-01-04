@@ -25,6 +25,11 @@ ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
 ENEMIES = []
 PLAYERS = []
 
+QUICK_ACTION_MESSAGE = None
+QUICK_REACTION_MESSAGE = None
+QUICK_CTX = None
+LAST_ACTION = None
+
 # JSON files
 with open("characters.json") as f:
 	characters = json.load(f)

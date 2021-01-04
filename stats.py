@@ -15,7 +15,7 @@ def d6():
 	return random.randint(1,6)
 
 def half(num):
-	return int(math.floor (num/2) )
+	return int(math.floor (int(num)/2) )
 	
 def is_player(name):
 	return name in db.get_player_names()

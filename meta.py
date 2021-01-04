@@ -4,12 +4,49 @@
 import discord
 from discord.ext import commands
 
-import time, datetime, json
+import time, datetime, json, random
 
 import importlib
 db = importlib.import_module("db")
 webscraper = importlib.import_module("webscraper")
 abilityClass = importlib.import_module("ability")
+
+
+TEST_SCRIPT_EASY = [
+		"$add_turn Bang 20", 
+		"$add_enemies 2 rat",
+		"$add_enemies 1 skeleton", 
+		"$next_turn",
+		"$gm_attack Bang skeleton heat_death     ",
+		"$undo                                   ",
+		"$gm_attack Bang skeleton heat_death     ",
+		"$gm_attack Bang rat heat_death +0 /2    ",
+		"$gm_spend Bang 1 Reaction               ",
+		"$end                                    ",
+		"$enemy_attack rat2 Bang				 ",
+		"$end                                    ",
+		"$end                                    ",
+		"$gm_attack Bang skeleton ratchet        ",
+		"$gm_spend Bang 2 hero                   ",
+		"$gm_modify Bang 2 Action                ",
+		"$gm_attack Bang rat2 ratchet            ",
+		"$end                                    "
+		]
+
+TEST_SCRIPT_HARD = [
+		"I will spend one action to [Aim] then shoot one of the rats with my rifle       ",
+		"[aim]                                                                           ",
+		"shoot [rat A] with [rifle]                                                      ",
+		"I'll [move] away from the enemies                                               ",
+		"then attack the [skeleton] with [crippling shot]                                ",
+		"I end my turn                                                                   ",
+		"I'll use [Instant Focus]                                                        ",
+		"then attack [rat B] with the [rifle]                                            ",
+		"I end my turn                                                                   ",
+		"I'm going to [Aim]                                                              ",
+		"then shoot the [skeleton] in the head with [disabling shot]                     ",
+		"[TIL this song is more than the opening fanfare]                                "
+]
 
 
 START_TIME = time.time()
@@ -36,7 +73,22 @@ class Meta(commands.Cog):
 	async def ping(self, ctx, help='Pong!'):
 		await ctx.send("Pong!")
 		
-		
+	@commands.command(pass_context=True)
+	async def test_script(self, ctx, which, help="For debug only."):
+		altered = ctx.message
+		await ctx.send("Now running test fight.")
+		if which == "easy":
+			script = TEST_SCRIPT_EASY
+		else:
+			script = TEST_SCRIPT_HARD
+		for line in script:
+			altered.content = line
+			await ctx.send("`> " + line + "`")
+			await self.bot.on_message(altered)
+			time.sleep(3)
+		await ctx.send("Done.")
+	
+
 	@commands.command(pass_context=True, aliases=['set_alias', 'newalias', 'new_alias', 'makealias', 'make_alias'])
 	async def setalias(self, ctx, alias, *command, help='Make a shortcut for a commonly used command.'):
 		who = str(ctx.message.author)
