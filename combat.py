@@ -4,7 +4,7 @@
 import discord
 from discord.ext import commands
 
-import random, d20, operator, time
+import random, d20, operator, time, re
 
 import importlib
 db = importlib.import_module("db")
@@ -14,6 +14,42 @@ playerClass = importlib.import_module("player")
 meta = importlib.import_module("meta")
 abilityClass = importlib.import_module("ability")
 act = importlib.import_module("action")
+
+TEST_SCRIPT_EASY =
+		"$add_turn Bang 20", 
+		"$add_enemies 2 rat",
+		"$add_enemies 1 skeleton", 
+		"$next_turn",
+		"$gm_attack Bang skeleton heat_death     ",
+		"$undo                                   ",
+		"$gm_attack Bang skeleton heat_death     ",
+		"$gm_attack Bang rat heat_death +0 /2    ",
+		"$gm_spend Bang 1 Reaction               ",
+		"$end                                    ",
+		"$enemy_attack rat2 Bang				 ",
+		"$end                                    ",
+		"$end                                    ",
+		"$gm_attack Bang skeleton ratchet        ",
+		"$gm_spend Bang 2 hero                   ",
+		"$gm_modify Bang 2 Action                ",
+		"$gm_attack Bang rat2 ratchet            ",
+		"$end                                    "
+		]
+
+TEST_SCRIPT_HARD = [
+"I will spend one action to [Aim] then shoot one of the rats with my rifle       ",
+"[aim]                                                                           ",
+"shoot [rat A] with [rifle]                                                      ",
+"I'll [move] away from the enemies                                               ",
+"then attack the [skeleton] with [crippling shot]                                ",
+"I end my turn                                                                   ",
+"I'll use [Instant Focus]                                                        ",
+"then attack [rat B] with the [rifle]                                            ",
+"I end my turn                                                                   ",
+"I'm going to [Aim]                                                              ",
+"then shoot the [skeleton] in the head with [disabling shot]                     ",
+"[TIL this song is more than the opening fanfare]                                "
+]
 
 
 # style: globals are in all caps
@@ -103,6 +139,26 @@ async def suggest_quick_reactions(ctx, entity):
 	await m.add_reaction(db.DASH)
 	await m.add_reaction(db.SHIELD)
 	QUICK_REACTION_MESSAGE = m
+	
+async def handle_round_effects(ctx):
+	entities = []
+	for player in db.PLAYERS:
+		entities.append(player)
+	for enemy in db.PLAYERS:
+		entities.append(enemy)
+		
+	for e in entities:
+		burning = e.get_modifier("burning")
+		bleeding = e.get_modifier("bleeding")
+		if burning is not None:
+			ctx.send(e.display_name() + " burns for " + str(burning) + " damage!")
+			e.change_resource_verbose(ctx, "HP", burning)
+			e.add_modifier("burning", "HP", max(burning-3, 0))
+			if burning - 3 <= 0:
+				e.remove_modifier("burning")
+				ctx.send(e.display_name() + " stops burning!")
+		if bleeding is not None:
+			ctx.send(e.display_name() + " bleeds for " + str(bleeding) + " damage!")
 
 class Combat(commands.Cog):
 	def __init__(self, bot):
@@ -115,32 +171,19 @@ class Combat(commands.Cog):
 		await self.next_turn(ctx)
 		
 	@commands.command(pass_context=True)
-	async def test_script_easy(self, ctx, help="For debug only."):
-		script = [
-		"$add_turn Bang 20", 
-		"$add_enemies 2 rat",
-		"$add_enemies 1 skeleton", 
-		"$next_turn",
-		"$gm_attack Bang skeleton heat_death          ",
-		"$undo                                   ",
-		"$gm_attack Bang skeleton heat_death          ",
-		"$gm_attack Bang rat heat_death +0 /2        ",
-		"$gm_spend Bang 1 Reaction               ",
-		"$end                                    ",
-		"$gm_modify Bang 3 Actions",
-		"$enemy_attack rat2 Bang",
-		"$end"
-		"$gm_attack Bang skeleton ratchet        ",
-		"$gm_spend Bang 2 hero                   ",
-		"$gm_modify Bang 2 Action                ",
-		"$gm_attack Bang rat2 ratchet            ",
-		"$end                                    "
-		]
+	async def test_script_easy(self, ctx, which, help="For debug only."):
 		altered = ctx.message
+		await ctx.send("Now running test fight.")
+		if which == "easy":
+			script = TEST_SCRIPT_EASY
+		else:
+			script = TEST_SCRIPT_HARD
 		for line in script:
 			altered.content = line
+			await ctx.send("`> " + line + "`")
 			await self.bot.on_message(altered)
-			time.sleep(1)
+			time.sleep(3)
+		await ctx.send("Done.")
 	
 	async def add_turn_internal(self, ctx, display_name, who, result):
 		multiturn = 2
@@ -240,6 +283,7 @@ class Combat(commands.Cog):
 
 	@commands.command(pass_context=True, aliases=['oops'])
 	async def undo(self, ctx, help = "Undo an attack or ability."):
+		print("combat.undo called")
 		for role, entity in LAST_ACTION.entities.items():
 			await ctx.send("Undoing effects for " + entity.name)
 			await entity.add_resources_verbose(ctx, LAST_ACTION.effects[role])
@@ -258,15 +302,20 @@ class Combat(commands.Cog):
 			if val < INIT_INDEX:
 				INIT_INDEX = val
 				await ctx.send("Now " + who + "'s turn.")
-				WHOSE_TURN = who
-				entity = db.find(who)
-				entity.new_turn()
-				if isinstance(entity, playerClass.Player):
-					await suggest_quick_actions(ctx, entity)
+				if who.startswith("[ENEMY]"):
+					who = who[who.index('x')+2:]
+					print("combat.next_turn: who is " + who)
+				else: # for now, don't process enemy turns, do later
+					entity = db.find(who)
+					entity.new_turn()
+					if isinstance(entity, playerClass.Player):
+						await suggest_quick_actions(ctx, entity)
+				WHOSE_TURN = who				
 				return
 		# reached the bottom, wrap around
 		INIT_INDEX = 99
 		await ctx.send("New round!")
+		await self.handle_round_effects(ctx)
 		await self.next_turn(ctx)
 		
 	@commands.command(pass_context=True)
@@ -283,7 +332,7 @@ class Combat(commands.Cog):
 		for e in new_enemies:
 			db.ENEMIES.append(e)
 		who = db.ENEMIES[-1].display_name()
-		await self.add_turn_internal(ctx, str(num) + "x " + e.name, who, stats.do_check(who, "INIT"))
+		await self.add_turn_internal(ctx, "[ENEMY] " + str(num) + "x " + e.name, who, stats.do_check(who, "INIT"))
 		await self.turn_order(ctx)
 
 	@commands.command(pass_context=True)
@@ -320,9 +369,25 @@ class Combat(commands.Cog):
 	async def add_turn(self, ctx, who, result, help= "Usage: $add_turn character roll_result"):
 		await self.add_turn_internal(ctx, who, who, result)
 
+	@commands.command(pass_context=True)
+	async def add_effect(self, ctx, who, description, stat, val, stacks="", help="Add a status or modifier. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+		if who == 'all':
+			ctx.message.add_reaction(db.THINKING)
+			for p in db.get_player_names():
+				await self.add_effect(ctx, p, description, stat, val, stacks)
+		elif who == 'enemies':
+			ctx.message.remove_reaction(db.THINKING, ctx.me)
+			for e in db.ENEMEIS:
+				await self.add_effect(ctx, e.display_name(), description, stat, val, stacks)
+			ctx.message.remove_reaction(db.THINKING, ctx.me)
+		else:
+			entity = db.find(who)
+			stacks = stacks != ""
+			entity.add_modifier(description, stat, val, stacks)
+			ctx.message.add_reaction(db.OK)
 
 	@commands.command(pass_context=True)
-	async def enemy_attack(self, ctx, attacker, target, help='Usage: $enemy_attack attacker target'):
+	async def enemy_attack(self, ctx, attacker, target):
 		global LAST_ACTION
 		await ctx.send(attacker + " attacks " + target + "!")
 		total = await stats.do_roll(ctx, db.find(attacker).dmg)

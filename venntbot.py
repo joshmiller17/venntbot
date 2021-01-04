@@ -29,7 +29,7 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-		await ctx.send("That command wasn't found! Sorry :(")
+		await ctx.send("No command found: " + ctx.message.content)
 	elif isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
 		await ctx.send("That's not how that command works. Try $help <command>")
 	else:

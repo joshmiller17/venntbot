@@ -22,6 +22,9 @@ class Entity:
 		self.attrs = defaultdict(int)
 		self.read_from_file()
 		
+	def display_name(self):
+		return self.name
+		
 	def read_from_file(self):
 		raise NotImplementedError
 		
@@ -62,17 +65,24 @@ class Entity:
 					return False
 			if key == 'R':
 				if self.reactions < val:
-					print("A " + str(self.reactions) + " < " + str(val))
+					print("R " + str(self.reactions) + " < " + str(val))
 					return False
 			if key == 'M':
 				if self.attrs["MP"] < val:
-					print("A " + str(self.attrs["MP"]) + " < " + str(val))
+					print("M " + str(self.attrs["MP"]) + " < " + str(val))
 					return False
 			if key == 'V':
 				if self.attrs["VIM"] < val:
-					print("A " + str(self.attrs["VIM"]) + " < " + str(val))
+					print("V " + str(self.attrs["VIM"]) + " < " + str(val))
 					return False
-			# TODO Health and Hero Points
+			if key == 'HP':
+				if self.attrs["HP"] < val:
+					print("HP " + str(self.attrs["HP"]) + " < " + str(val))
+					return False
+			if key == 'HERO':
+				if self.attrs["HERO"] < val:
+					print("HERO " + str(self.attrs["HERO"]) + " < " + str(val))
+					return False
 		return True
 		
 	
@@ -89,7 +99,12 @@ class Entity:
 		if key == 'V':
 			self.attrs["VIM"] += delta
 			await ctx.send(str(self.attrs["VIM"]) + " Vim left")
-		# TODO Health and Hero Points
+		if key == 'HP':
+			self.attrs["HP"] += delta
+			await ctx.send(str(self.attrs["HP"]) + " HP left")
+		if key == 'HERO':
+			self.attrs["HERO"] += delta
+			await ctx.send(str(self.attrs["HERO"]) + " Hero points left")
 			
 	def change_resource(self, key, delta):
 		if key == 'A':
@@ -100,7 +115,10 @@ class Entity:
 			self.attrs["MP"] += delta
 		if key == 'V':
 			self.attrs["VIM"] += delta
-		# TODO Health and Hero Points
+		if key == 'HP':
+			self.attrs["HP"] += delta
+		if key == 'HERO':
+			self.attrs["HERO"] += delta
 		
 		
 	def use_resources(self, cost):
@@ -144,6 +162,7 @@ class Entity:
 	
 	def add_modifier(self, name, stat, val, stacks=False):
 		stat = stat.upper()
+		name = name.lower()
 		new_mod = {"name" : name, "stat" : stat, "val" : val}
 		stacked = False
 		if stacks:
@@ -152,12 +171,15 @@ class Entity:
 					m["val"] += val
 					stacked = True
 		if not stacked:
+			self.remove_modifier(name)
 			mods.append(m)
 			
 	def get_modifier(self, name):
 		for m in mods:
 			if m["name"] == name:
 				return m["val"]
+		return None
+
 		
 	def remove_modifier(self, name):
 		for m in mods:

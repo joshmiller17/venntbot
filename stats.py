@@ -105,7 +105,7 @@ class Stats(commands.Cog):
 		else:
 			entity.attrs[stat] = value
 		
-	@commands.command(pass_context=True, alises=['gm_spend'])
+	@commands.command(pass_context=True)
 	async def gm_modify(self, ctx, who, value, stat, help="Modify a stat."):
 		value = clean_modifier(value)
 		entity = db.find(who)
