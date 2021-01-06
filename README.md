@@ -10,6 +10,7 @@
 
 - Globals are in ALL_CAPS and restricted to the `db` module
 - Internal functions deal in Entities, external (i.e. command) functions deal in strings
+- Internal versions of command functions are named `do_x`
 - Each class builds its own copy of Logger: logging uses this instead of print statements
 - Naming conventions:
   - who/target/attacker: the human-readable string referring to an entity, equivalent to `entity.display_name()`
