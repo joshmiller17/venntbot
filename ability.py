@@ -5,6 +5,9 @@ import re
 
 import importlib
 webscraper = importlib.import_module("webscraper")
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("ability")
+
 
 # style: globals are in all caps
 ABILITY_CACHE = {} # name : Ability
@@ -59,8 +62,7 @@ def make_ability(name):
 		parsed_name = True
 			
 	ret =  Ability(name, contents, purchase_cost=pur_cost, activation_cost=act_cost, effect=eff, unlocks=unlock, prerequisites=prereq, expedited_for=exp_for, mp_costs=m_cost, casting_dl=cast_dl, range=ability_range)
-	print("ability.make_ability:")
-	print(ret)
+	logger.log("make_ability", ret)
 	return ret
 	
 
@@ -74,10 +76,7 @@ def parse_unlocks(line):
 	return line[9:-1] # just get string for now
 	
 def parse_prereq(line):
-	print("ability.parse_prereq:")
-	print(line[12])
-	print(line[13])
-	print(line[14])
+	logger.log("parse_prereq", line[12:14])
 	if line[12] == 's':
 		return line[16:-1] # just get string for now
 	else:
@@ -97,9 +96,7 @@ def parse_activation_cost(line):
 	cost = {}
 	matches = re.findall("Activation: ((?:Passive)|(\d Actions?)|(Attack)|(?:, )|(\d*\**X? Actions?)|(\d*\**X? Reactions?)|(\d*\**X? Vim)|(\d*\**X? MP))*", line)
 	for match_tuple in matches:
-		print("ability.parse_activation_cost:")
-		print("cost tuple is")
-		print(match_tuple)
+		logger.log("parse_activation_cost", "tuple: " str(match_tuple))
 		for match in match_tuple:
 			if match == "" or match == ", ":
 				continue

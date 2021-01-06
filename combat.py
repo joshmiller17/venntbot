@@ -17,17 +17,16 @@ act = importlib.import_module("action")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("combat")
 
-async def apply_attack(ctx, target, dmg):
-	t = db.find(target)
-	armor = t.get_stat("ARMOR")
+async def apply_attack(ctx, target_ent, dmg):
+	armor = target_ent.get_stat("ARMOR")
 	true_dmg = max(dmg - armor, 0)
-	if true_dmg > t.get_stat("HP"):
-		true_dmg = t.get_stat("HP")
-	new_val = t.get_stat("HP") - true_dmg
-	t.set_stat("HP", new_val)
-	db.LAST_ACTION.add_effect(act.ActionRole.TARGET, t, {"HP":true_dmg})
-	await ctx.send(target + " takes " + str(true_dmg) + " damage!")
-	await stats.do_examine(ctx, target)
+	if true_dmg > target_ent.get_stat("HP"):
+		true_dmg = target_ent.get_stat("HP")
+	new_val = target_ent.get_stat("HP") - true_dmg
+	target_ent.set_stat("HP", new_val)
+	db.LAST_ACTION.add_effect(act.ActionRole.TARGET, target_ent, {"HP":true_dmg})
+	await ctx.send(target_ent.display_name() + " takes " + str(true_dmg) + " damage!")
+	await stats.do_examine(ctx, target_ent)
 
 async def check_hit(ctx, acc, vim, dmg):
 	if acc < vim:
@@ -46,7 +45,6 @@ async def handle_round_effects(ctx):
 		entities.append(player)
 	for enemy in db.ENEMIES:
 		entities.append(enemy)
-		logger.log("handle_round_effects", "Adding " + str(enemy))
 		
 	for e in entities:
 		burning = e.mods.get_modifier_by_stat("BURNING")

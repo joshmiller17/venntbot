@@ -20,7 +20,7 @@ class Enemy(entity.Entity):
 		return "[Enemy: " + self.name + "]"
 		
 	def read_from_file(self):
-		e = db.get_enemy_file(self.name)
+		e = db.load_enemy(self.name)
 		self.dmg = e["DMG"]
 		for key, val in e.items():
 			if isinstance(val, int):

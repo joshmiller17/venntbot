@@ -16,12 +16,10 @@ meta = importlib.import_module("meta")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("communication")
 
-async def suggest_quick_actions(ctx, who):
-	if who is None:
+async def suggest_quick_actions(ctx, entity):
+	if entity is None:
 		return # No one's turn
 		
-	entity = db.find(who)
-
 	available_actions = {"Basic attack" : db.SWORDS, "Move" : db.RUNNING, "End turn" : db.SKIP}
 	actions_left = entity.actions
 
@@ -47,12 +45,10 @@ async def suggest_quick_actions(ctx, who):
 	db.QUICK_ACTION_MESSAGE = m
 	db.QUICK_CTX = ctx
 
-async def suggest_quick_reactions(ctx, who):
-	if who is None:
+async def suggest_quick_reactions(ctx, entity):
+	if entity is None:
 		return # No one's turn
-		
-	entity = db.find(who)
-
+	
 	if entity.reactions < 1:
 		return
 	m = await ctx.send("*(Quick reactions: {0} Dodge, {1} Block.)*".format(db.DASH, db.SHIELD))
@@ -96,7 +92,6 @@ class Communication(commands.Cog):
 		self.enemy_list_offset = 0
 		self.initCog = self.bot.get_cog('Initiative')
 		self.gm = self.bot.get_cog('GM')
-
 	
 	async def remove_bot_reactions(self, message):
 		for reaction in message.reactions:
@@ -109,8 +104,12 @@ class Communication(commands.Cog):
 		if user == self.bot.user:
 			return
 		if reaction.message == db.QUICK_ACTION_MESSAGE:
+			if self.initCog.whose_turn is None:
+				db.QUICK_CTX.send("Cannot process reactions, I don't know whose turn it is.")
+				return
 			if meta.get_character_name(user) == self.initCog.whose_turn or meta.get_character_name(user) == "GM":
 				await self.remove_bot_reactions(reaction.message)
+				who_ent = db.find(self.initCog.whose_turn)
 				if reaction.emoji == db.MORE: # assume we're doing basic attack
 					await make_enemy_list(self, db.QUICK_CTX, self.enemy_list_offset)
 				if reaction.emoji == db.SWORDS:
@@ -119,35 +118,36 @@ class Communication(commands.Cog):
 				if db.is_number_emoji(reaction.emoji):
 					self.enemy_list_offset -= 9
 					enemy_index = db.NUMBERS.index(reaction.emoji) + self.enemy_list_offset
-					target = db.ENEMIES[enemy_index]
-					await self.gm.gm_attack(db.QUICK_CTX, self.initCog.whose_turn, target.display_name(), db.find(self.initCog.whose_turn).primary_weapon)
+					target_ent = db.ENEMIES[enemy_index]
+					await self.gm.gm_attack(db.QUICK_CTX, self.initCog.whose_turn, target_ent.display_name(), who_ent.primary_weapon)
 					await suggest_quick_actions(db.QUICK_CTX, self.initCog.whose_turn) 
 				if reaction.emoji == db.RUNNING:
-					entity = db.find(self.initCog.whose_turn)
-					success = await entity.use_resources_verbose(db.QUICK_CTX, {'A':1})
-					await db.QUICK_CTX.send(self.initCog.whose_turn + " moved.")
-					await suggest_quick_actions(db.QUICK_CTX, self.initCog.whose_turn)
+					success = await who_ent.use_resources_verbose(db.QUICK_CTX, {'A':1})
+					await db.QUICK_CTX.send(who_ent.display_name() + " moved.")
+					await suggest_quick_actions(db.QUICK_CTX, who_ent)
 				if reaction.emoji == db.REPEAT:
-					last_action = act.get_last_action(user=db.find(self.initCog.whose_turn))
+					last_action = act.get_last_action(user=who_ent)
 					if last_action.type == act.ActionType.ABILITY:
-						await self.gm.gm_use(db.QUICK_CTX, self.initCog.whose_turn, last_action.description)
+						await self.gm.gm_use(db.QUICK_CTX, who_ent.display_name(), last_action.description)
 					elif last_action.type == act.ActionType.SPELL:
-						await self.gm.gm_cast(db.QUICK_CTX, self.initCog.whose_turn, last_action.description)
+						await self.gm.gm_cast(db.QUICK_CTX, who_ent.display_name(), last_action.description)
 					else:
-						raise ValueError("combat.on_reaction_add: only ABILITY and SPELL action types are supported")
+						raise ValueError("communication.on_reaction_add: only ABILITY and SPELL action types are supported")
 				if reaction.emoji == db.SKIP:
 					await self.initCog.next_turn(db.QUICK_CTX)
 		if reaction.message == db.QUICK_REACTION_MESSAGE:
+			if self.initCog.whose_turn is None:
+				db.QUICK_CTX.send("Cannot process reactions, I don't know whose turn it is.")
+				return
 			if meta.get_character_name(user) == self.initCog.whose_turn or meta.get_character_name(user) == "GM":
 				await self.remove_bot_reactions(reaction.message)
+				who_ent = db.find(self.initCog.whose_turn)
 				if reaction.emoji == db.DASH:
-					attacked = db.find(self.initCog.whose_turn)
-					dodged_action = act.get_last_action(type=act.ActionType.ATTACK, target=attacked)
-					attacked.add_resources_verbose(ctx, dodged_action.effects[act.ActionRole.TARGET])
-					db.find(self.initCog.whose_turn).use_resources_verbose({'R':1})
+					dodged_action = act.get_last_action(type=act.ActionType.ATTACK, target=who_ent)
+					who_ent.add_resources_verbose(ctx, dodged_action.effects[act.ActionRole.TARGET])
+					who_ent.use_resources_verbose({'R':1})
 				if reaction.emoji == db.SHIELD:
-					attacked = db.find(self.initCog.whose_turn)
-					blocked_action = act.get_last_action(type=act.ActionType.ATTACK, target=attacked)
+					blocked_action = act.get_last_action(type=act.ActionType.ATTACK, target=who_ent)
 					hp_lost = blocked_action.effects[act.ActionRole.TARGET]["HP"]
-					attacked.add_resources_verbose(ctx, {"HP": hp_lost, "VIM" : -1 * hp_lost})
-					db.find(self.initCog.whose_turn).use_resources_verbose({'R':1})
+					who_ent.add_resources_verbose(ctx, {"HP": hp_lost, "VIM" : -1 * hp_lost})
+					who_ent.use_resources_verbose({'R':1})

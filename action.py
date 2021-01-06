@@ -8,6 +8,9 @@ from enum import Enum
 import importlib
 db = importlib.import_module("db")
 ent = importlib.import_module("entity")
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("action")
+
 
 NEXT_ID = 0
 ACTION_HISTORY = []
@@ -46,4 +49,4 @@ class Action:
 	def add_effect(self, role, entity, cost):
 		self.effects[role] = cost
 		self.entities[role] = entity
-		print("Action.add_effect: recorded " + entity.name + " changed " + str(cost))
+		logger.log("add_effect", "recorded " + entity.name + " changed " + str(cost))

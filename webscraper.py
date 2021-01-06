@@ -36,10 +36,11 @@ def get_ability_contents(ability, URL):
 	last_had_newline = False
 	for hit in soup.find_all('p'):
 		text = hit.get_text()
-		if ability in text: # FIXME not good at getting substrings, e.g. "Grow" vs "Growth" vs "Growth II"
+		if ability in text: # Goes through the whole page, takes the *last* valid ability which matches the given description
 			found = True
+			contents = []
 		if found and (text.isspace() or (text.startswith('\n') and last_had_newline)):
-			return contents
+			found = False
 		if found:
 			contents.append(text)
 			if text.endswith('\n'):

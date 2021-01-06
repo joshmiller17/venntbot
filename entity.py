@@ -8,7 +8,8 @@ db = importlib.import_module("db")
 sheets = importlib.import_module("sheets")
 stats = importlib.import_module("stats")
 mod = importlib.import_module("modifier")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("entity")
 
 ACTIONS_PER_TURN = 3
 REACTIONS_PER_TURN = 1
@@ -32,15 +33,15 @@ class Entity:
 		raise NotImplementedError
 		
 	def set_stat(self, stat, val):
-		stat = stat.upper()
+		stat = stat.upper()  # should be redundant
 		self.attrs[stat] = val
 		
 	def mod_stat(self, stat, val):
-		stat = stat.upper()
+		stat = stat.upper()  # should be redundant
 		self.attrs[stat] += val
 		
 	def get_stat(self, stat):
-		stat = stat.upper()
+		stat = stat.upper() # should be redundant
 		ret = self.attrs[stat]
 		mods = self.mods.get_modifier_by_stat(stat)
 		if mods is not None:
@@ -71,31 +72,31 @@ class Entity:
 			except ValueError:
 				pass
 			if not isinstance(val, int):
-				print("entity.can_afford ignoring " + key + ": " + str(val))
+				logger.log("can_afford", " ignoring " + key + ": " + str(val))
 				continue # ignore X, *, Attack, Passive, etc
 			if key == 'A':
 				if self.actions < val:
-					print("A " + str(self.actions) + " < " + str(val))
+					logger.log("can_afford", "A " + str(self.actions) + " < " + str(val))
 					return False
 			if key == 'R':
 				if self.reactions < val:
-					print("R " + str(self.reactions) + " < " + str(val))
+					logger.log("can_afford", "R " + str(self.reactions) + " < " + str(val))
 					return False
 			if key == 'M':
 				if self.attrs["MP"] < val:
-					print("M " + str(self.attrs["MP"]) + " < " + str(val))
+					logger.log("can_afford", "M " + str(self.attrs["MP"]) + " < " + str(val))
 					return False
 			if key == 'V':
 				if self.attrs["VIM"] < val:
-					print("V " + str(self.attrs["VIM"]) + " < " + str(val))
+					logger.log("can_afford", "V " + str(self.attrs["VIM"]) + " < " + str(val))
 					return False
 			if key == 'HP':
 				if self.attrs["HP"] < val:
-					print("HP " + str(self.attrs["HP"]) + " < " + str(val))
+					logger.log("can_afford", "HP " + str(self.attrs["HP"]) + " < " + str(val))
 					return False
 			if key == 'HERO':
 				if self.attrs["HERO"] < val:
-					print("HERO " + str(self.attrs["HERO"]) + " < " + str(val))
+					logger.log("can_afford", "HERO " + str(self.attrs["HERO"]) + " < " + str(val))
 					return False
 		return True
 		
@@ -143,7 +144,7 @@ class Entity:
 			except ValueError:
 				pass
 			if not isinstance(val, int):
-				print("entity.use_resources ignoring " + key + ": " + str(val))
+				logger.log("use_resources", "ignoring " + key + ": " + str(val))
 				if key == 'A' or key == 'R' or key == 'M' or key == 'V': # should be able to parse
 					able_to_calculate = False
 				continue # ignore X, *, Attack, Passive, etc
@@ -166,7 +167,7 @@ class Entity:
 			except ValueError:
 				pass
 			if not isinstance(val, int):
-				print("entity.use_resources ignoring " + key + ": " + str(val))
+				logger.log("use_resources_verbose", "ignoring " + key + ": " + str(val))
 				if key == 'A' or key == 'R' or key == 'M' or key == 'V': # should be able to parse
 					able_to_calculate = False
 				continue # ignore X, *, Attack, Passive, etc

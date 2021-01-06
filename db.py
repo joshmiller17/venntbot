@@ -63,27 +63,22 @@ def find(name):
 	logger.warn("find", "none found")
 	return None
 	
+# get data from file
+def load_enemy(name):
+	for entity in enemies:
+		if entity["name"] == name:
+			return entity
+	return None
+	
 def get_weapon(name):
 	for weapon in weapons:
 		if weapon["name"] == name:
 			return weapon
 	return None
 
-def get_entity_file(name):
+def get_entity(name):
 	for entity in entities:
 		if entity.name == name:
-			return entity
-	return None
-	
-def get_enemy_file(name):
-	for entity in enemies:
-		if entity["name"] == name:
-			return entity
-	return None
-	
-def get_player_file(name):
-	for entity in characters:
-		if entity["name"] == name:
 			return entity
 	return None
 	

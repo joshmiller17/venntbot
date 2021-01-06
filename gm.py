@@ -89,7 +89,7 @@ class GM(commands.Cog):
 		
 	@commands.command(pass_context=True)
 	async def gm_set_primary_weapon(self, ctx, who, weapon, help="Set someone's primary weapon type. For GM use only."):
-		entity = db.get_player_file(who)
+		entity = db.find(who)
 		entity["primary_weapon"] = weapon
 		db.save_characters()
 		await ctx.message.add_reaction(db.OK)
