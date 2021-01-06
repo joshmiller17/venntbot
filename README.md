@@ -8,7 +8,7 @@
 
 ### Style
 
-- Globals are in ALL_CAPS and restricted to the `db` module
+- Globals are in ALL_CAPS and usually in the `db` module (for globals needed by multiple classes)
 - Internal functions deal in Entities, command functions deal in strings
   - The only time a command function doesn't make this conversion is when passing the arg to another command function (e.g. `use` to `gm_use`)
   - When going from internal to command, pass the Entity as `ent.display_name()`
