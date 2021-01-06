@@ -13,7 +13,8 @@ init = importlib.import_module("initiative")
 abilityClass = importlib.import_module("ability")
 act = importlib.import_module("action")
 meta = importlib.import_module("meta")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("communication")
 
 async def suggest_quick_actions(ctx, who):
 	if who is None:

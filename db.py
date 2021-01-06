@@ -3,7 +3,9 @@
 
 import json
 
-# style: globals are in all caps
+import importlib
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("db")
 
 # Emojis
 OK = '👍'
@@ -51,14 +53,14 @@ def find(name):
 	if name is None:
 		raise ValueError("Null passed to db.find")
 		
-	print("db.find: " + name)
+	logger.log("find", name)
 	for e in ENEMIES:
 		if e.display_name() == name:
 			return e
 	for p in PLAYERS:
 		if p.name == name:
 			return p		
-	print("db.find: none found")
+	logger.warn("find", "none found")
 	return None
 	
 def get_weapon(name):

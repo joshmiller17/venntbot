@@ -8,7 +8,8 @@ import random, d20, math
 import importlib
 db = importlib.import_module("db")
 meta = importlib.import_module("meta")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("stats")
 
 
 def d6():
@@ -24,7 +25,7 @@ def do_check(who, attr): # internal call to check; allow entity or name
 	if isinstance(who, str):
 		who = db.find(who)
 	attr_val = who.get_stat(attr)
-	print("stats.do_check: Rolling " + attr + " check for " + who.name + " with mod " + str(attr_val))
+	logger.log("do_check", who + " Rolling " + attr + " check for " + who.name + " with mod " + str(attr_val))
 	return d6() + d6() + d6() + attr_val
 	
 def clean_modifier(v):
@@ -49,13 +50,13 @@ def compare_hp(current, max):
 	return "dead"
 	
 def get_status(who):
-	print("stats.get_status: " + who)
+	logger.log("get_status", who)
 	e = db.find(who)
 	return compare_hp(e.get_stat("HP"), e.get_stat("MAX_HP"))
 
 async def do_roll(ctx, *args):
 	rollstr = "".join(args[:]) # remove spaces
-	print("stats.do_roll: " + rollstr)
+	logger.log("do_roll", rollstr)
 	r = d20.roll(rollstr, allow_comments=True)
 	await ctx.send(str(r))
 	return r.total

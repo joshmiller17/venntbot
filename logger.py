@@ -11,3 +11,11 @@ class Logger():
 	def log(function, message):
 		t = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime())
 		print("[" + t + "] " + self.class_name + "." + function + ": " + message)
+		
+	def warn(function, message):
+		t = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime())
+		print("WARNING: [" + t + "] " + self.class_name + "." + function + ": " + message)
+	
+	def err(function, message):
+		t = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime())
+		print("ERROR: [" + t + "] " + self.class_name + "." + function + ": " + message)

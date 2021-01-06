@@ -10,7 +10,8 @@ import importlib
 db = importlib.import_module("db")
 webscraper = importlib.import_module("webscraper")
 abilityClass = importlib.import_module("ability")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("meta")
 
 TEST_SCRIPT_EASY = [
 		"$add_turn Bang 20", 
@@ -54,7 +55,7 @@ def get_character_name(username):
 	for character in db.characters:
 		if character["played_by"] == str(username):
 			return character["name"]
-	print("meta.get_character_name: ERROR: no name found for " + str(username))
+	logger.err("get_character_name", "no name found for " + str(username))
 	return ""
 	
 def save_aliases(aliases):
@@ -111,7 +112,7 @@ class Meta(commands.Cog):
 				if user[alias]:
 					altered = ctx.message
 					altered.content = user[alias]
-					print("meta.alias: new content is " + altered.content)
+					logger.log("alias","new content is " + altered.content)
 					await self.bot.on_message(altered)
 					await ctx.message.add_reaction(db.OK)
 					return
@@ -148,7 +149,7 @@ class Meta(commands.Cog):
 		matches, URL = webscraper.find_ability(*args)
 		if len(matches) == 1:
 			contents = webscraper.get_ability_contents(matches[0], URL)
-			print("meta.whatis: " + str(contents))
+			logger.log("whatis",str(contents))
 			contents.append("From: <" + URL + ">")
 			# ----- split contents into msgs < 2000 char
 			msg_length = 0
@@ -171,8 +172,8 @@ class Meta(commands.Cog):
 				await ctx.send("Did you mean: " + " or ".join(matches))
 			else:
 				await ctx.send("Your query matches too many abilities. Please try being more specific.")
-				print("meta.whatis: found too many matches")
-				print(matches)
+				logger.log("whatis",found too many matches")
+				logger.log("whatis",matches)
 		else:
 			ability = " ".join(args[:])
 			await ctx.send("No ability found: " + ability)

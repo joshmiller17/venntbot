@@ -13,7 +13,8 @@ enemyhandler = importlib.import_module("enemyhandler")
 playerClass = importlib.import_module("player")
 communication = importlib.import_module("communication")
 combat = importlib.import_module("combat")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("initiative")
 
 
 async def add_turn_internal(self, ctx, display_name, who, result):
@@ -60,15 +61,14 @@ class Initiative(commands.Cog):
 			await ctx.send("Not in combat.")
 			return
 		sorted_turns = sorted(self.turns.items(), key=operator.itemgetter(1),reverse=True)
-		print("combat.next_turn: ")
-		print(sorted_turns)
+		logger.log("next_turn",sorted_turns)
 		for who, val in sorted_turns:
 			if val < self.init_index:
 				self.init_index = val
 				await ctx.send("Now " + who + "'s turn.")
 				if who.startswith("[ENEMY]"):
 					who = who[who.index('x')+2:]
-					print("combat.next_turn: who is " + who)
+					logger.log("whatis", "who is " + who)
 				else: # for now, don't process enemy turns, do later
 					entity = db.find(who)
 					entity.new_turn()
@@ -97,7 +97,7 @@ class Initiative(commands.Cog):
 		new_enemies = enemyhandler.make_enemies(num, name)
 		for e in new_enemies:
 			db.ENEMIES.append(e)
-			print("initiative.add_enemy: " + e.display_name())
+			logger.log("add_enemies", e.display_name())
 		who = db.ENEMIES[-1].display_name()
 		await add_turn_internal(self, ctx, "[ENEMY] " + str(num) + "x " + e.name, who, stats.do_check(who, "INIT"))
 		await self.turn_order(ctx)

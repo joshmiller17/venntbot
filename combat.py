@@ -14,7 +14,8 @@ playerClass = importlib.import_module("player")
 meta = importlib.import_module("meta")
 abilityClass = importlib.import_module("ability")
 act = importlib.import_module("action")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("combat")
 
 async def apply_attack(ctx, target, dmg):
 	t = db.find(target)
@@ -37,7 +38,7 @@ async def check_hit(ctx, acc, vim, dmg):
 	return dmg
 	
 async def handle_round_effects(ctx):
-	print("combat.handle_round_effects")
+	logger.log("handle_round_effects", "called")
 	await ctx.message.add_reaction(db.THINKING)
 
 	entities = []
@@ -45,7 +46,7 @@ async def handle_round_effects(ctx):
 		entities.append(player)
 	for enemy in db.ENEMIES:
 		entities.append(enemy)
-		print("Adding " + str(enemy))
+		logger.log("handle_round_effects", "Adding " + str(enemy))
 		
 	for e in entities:
 		burning = e.mods.get_modifier_by_stat("BURNING")
@@ -73,7 +74,7 @@ class Combat(commands.Cog):
 
 	@commands.command(pass_context=True, aliases=['oops'])
 	async def undo(self, ctx, help = "Undo an attack or ability."):
-		print("combat.undo called")
+		logger.log("undo", "called")
 		for role, entity in LAST_ACTION.entities.items():
 			await ctx.send("Undoing effects for " + entity.name)
 			await entity.add_resources_verbose(ctx, LAST_ACTION.effects[role])
@@ -97,7 +98,7 @@ class Combat(commands.Cog):
 
 	@commands.command(pass_context=True)
 	async def add_effect(self, ctx, who, description, stat, val, stacks="", help="Add a status or modifier. Can use 'party' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
-		print("combat.add_effect: " + who)
+		logger.log("add_effect", who)
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():

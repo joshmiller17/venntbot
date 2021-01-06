@@ -14,7 +14,8 @@ abilityClass = importlib.import_module("ability")
 act = importlib.import_module("action")
 combat = importlib.import_module("combat")
 communication = importlib.import_module("communication")
-
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("gm")
 
 class GM(commands.Cog):
 	def __init__(self, bot):
@@ -29,7 +30,7 @@ class GM(commands.Cog):
 			await init.list_enemies_internal(ctx)
 			return
 		
-		print("combat.gm_attack: " + str(who) + " " + str(target) + " " + str(weapon))
+		logger.log("gm_attack", str(who) + " " + str(target) + " " + str(weapon))
 		found = False
 		for w in db.weapons:
 			if w["name"] == weapon:
@@ -66,7 +67,7 @@ class GM(commands.Cog):
 			for i in range(len(mods.sources)):
 				rollstr += "+{0} [{1}]".format(mods.vals[i], mods.sources[i])
 		
-		print("combat.gm_attack: rolling " + rollstr)
+		logger.log("gm_attack", "rolling " + rollstr)
 		total = await stats.do_roll(ctx, rollstr)
 		total = await combat.check_hit(ctx, acc, vim, total)
 		await combat.apply_attack(ctx, target, total)
@@ -96,7 +97,7 @@ class GM(commands.Cog):
 		
 	@commands.command(pass_context=True)
 	async def gm_use(self, ctx, who, *ability, help="Use someone's ability. For GM use only."): 	# TODO allow the use of items
-		print("combat.gm_use:")
+		logger.log("gm_use", who)
 		abiObj = abilityClass.get_ability(" ".join(ability[:]))
 		user = db.find(who)
 		if not user.can_afford(abiObj.cost):
