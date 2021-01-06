@@ -10,3 +10,4 @@
 
 - Globals are in ALL_CAPS and restricted to the `db` module
 - Internal functions deal in Entities, external (i.e. command) functions deal in strings
+- Each class builds its own copy of Logger: logging uses this instead of print statements
