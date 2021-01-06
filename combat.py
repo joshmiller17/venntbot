@@ -1,4 +1,4 @@
-# --- Josh Aaron Miller 2020
+# --- Josh Aaron Miller 2021
 # --- Combat commands
 
 import discord
@@ -37,28 +37,39 @@ async def check_hit(ctx, acc, vim, dmg):
 	return dmg
 	
 async def handle_round_effects(ctx):
+	print("combat.handle_round_effects")
+	await ctx.message.add_reaction(db.THINKING)
+
 	entities = []
 	for player in db.PLAYERS:
 		entities.append(player)
-	for enemy in db.PLAYERS:
+	for enemy in db.ENEMIES:
 		entities.append(enemy)
+		print("Adding " + str(enemy))
 		
 	for e in entities:
-		burning = e.get_modifier("burning")
-		bleeding = e.get_modifier("bleeding")
+		burning = e.mods.get_modifier_by_stat("BURNING")
+		bleeding = e.mods.get_modifier_by_stat("BLEEDING")
 		if burning is not None:
-			ctx.send(e.display_name() + " burns for " + str(burning) + " damage!")
-			e.change_resource_verbose(ctx, "HP", burning)
-			e.add_modifier("burning", "HP", max(burning-3, 0))
-			if burning - 3 <= 0:
-				e.remove_modifier("burning")
-				ctx.send(e.display_name() + " stops burning!")
+			await ctx.send(e.display_name() + " burns for " + str(burning.total()) + " damage!")
+			await e.change_resource_verbose(ctx, "HP", -1 * burning.total())
+			e.mods.remove_modifier_by_stat("BURNING")
+			e.mods.add_modifier("BURNING", "burning", max(burning.total()-3, 0), False)
+			if burning.total() - 3 <= 0:
+				e.mods.remove_modifier_by_stat("BURNING")
+				await ctx.send(e.display_name() + " stops burning!")
 		if bleeding is not None:
-			ctx.send(e.display_name() + " bleeds for " + str(bleeding) + " damage!")
+			await ctx.send(e.display_name() + " bleeds for " + str(bleeding.total()) + " damage!")
+			await e.change_resource_verbose(ctx, "HP", -1 * bleeding.total())
+		time.sleep(0.25)
+		
+	await ctx.message.remove_reaction(db.THINKING, ctx.me)
+
 
 class Combat(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
+		self.gm = self.bot.get_cog('GM')
 
 	@commands.command(pass_context=True, aliases=['oops'])
 	async def undo(self, ctx, help = "Undo an attack or ability."):
@@ -66,29 +77,81 @@ class Combat(commands.Cog):
 		for role, entity in LAST_ACTION.entities.items():
 			await ctx.send("Undoing effects for " + entity.name)
 			await entity.add_resources_verbose(ctx, LAST_ACTION.effects[role])
+			
+	@commands.command(pass_context=True)
+	async def howis(self, ctx, who, help="Get someone's full status. Can use 'party', 'enemies', or 'everyone'."):
+		list = []
+		if who == 'party' or who == 'everyone':
+			list += db.get_player_names()
+		if who == 'enemies' or who == 'everyone':
+			list += [e.display_name() for e in db.ENEMIES]
+		if list != []:
+			await ctx.message.add_reaction(db.THINKING)
+			for e in list:
+				await self.howis(ctx, e)
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
+		else:
+			entity = db.find(who)
+			await ctx.send(entity.more())
+
 
 	@commands.command(pass_context=True)
-	async def add_effect(self, ctx, who, description, stat, val, stacks="", help="Add a status or modifier. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
-		if who == 'all':
-			ctx.message.add_reaction(db.THINKING)
+	async def add_effect(self, ctx, who, description, stat, val, stacks="", help="Add a status or modifier. Can use 'party' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+		print("combat.add_effect: " + who)
+		if who == 'party':
+			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
 				await self.add_effect(ctx, p, description, stat, val, stacks)
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		elif who == 'enemies':
-			ctx.message.remove_reaction(db.THINKING, ctx.me)
-			for e in db.ENEMEIS:
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
+			for e in db.ENEMIES:
 				await self.add_effect(ctx, e.display_name(), description, stat, val, stacks)
-			ctx.message.remove_reaction(db.THINKING, ctx.me)
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		else:
 			entity = db.find(who)
 			stacks = stacks != ""
-			entity.add_modifier(description, stat, val, stacks)
-			ctx.message.add_reaction(db.OK)
+			entity.mods.add_modifier(description, stat, stats.clean_modifier(val), stacks)
+			await ctx.message.add_reaction(db.OK)
+			
+	@commands.command(pass_context=True)
+	async def modify_effect(self, ctx, who, description, stat, val, help="Modify an existing status. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+		if who == 'party':
+			await ctx.message.add_reaction(db.THINKING)
+			for p in db.get_player_names():
+				await self.modify_effect(ctx, p, description, stat, val)
+		elif who == 'enemies':
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
+			for e in db.ENEMIES:
+				await self.modify_effect(ctx, e.display_name(), description, stat, val)
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
+		else:
+			entity = db.find(who)
+			entity.mods.add_modifier(description, stat, stats.clean_modifier(val) + entity.mods.get_modifier_by_name(description), "true")
+			await ctx.message.add_reaction(db.OK)
 	
 	@commands.command(pass_context=True)
-	async def define_weapon(self, ctx, name, attr, dmg, *special, help="Define a new weapon. For special damage, add at the end, e.g. '1d6 burning'"):
+	async def remove_effect(self, ctx, who, description, help="Remove a status or modifier. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+		if who == 'party':
+			await ctx.message.add_reaction(db.THINKING)
+			for p in db.get_player_names():
+				await self.remove_effect(ctx, p, description)
+		elif who == 'enemies':
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
+			for e in db.ENEMIES:
+				await self.remove_effect(ctx, e.display_name(), description)
+			await ctx.message.remove_reaction(db.THINKING, ctx.me)
+		else:
+			entity = db.find(who)
+			stacks = stacks != ""
+			entity.mods.remove_modifier_by_name(description)
+			await ctx.message.add_reaction(db.OK)
+	
+	@commands.command(pass_context=True)
+	async def define_weapon(self, ctx, name, attr, dmg, *special, help="Define a new weapon. For special damage, add at the end, e.g. '1d6 burning'"):		
 		new_weapon = {}
-		new_weapon["name"] = name
-		new_weapon["attr"] = attr
+		new_weapon["name"] = name.lower()
+		new_weapon["attr"] = attr.upper()
 		new_weapon["dmg"] = dmg
 		mods = list(special)
 		if len(mods) > 0:
@@ -106,39 +169,47 @@ class Combat(commands.Cog):
 					amt = None
 			
 		await ctx.message.add_reaction(db.OK)
-		db.weapons.append(new_weapon)
+		overwrite = False
+		for weapon in db.weapons:
+			if weapon["name"] == name:
+				await ctx.send("Overwriting old weapon: " + str(weapon))
+				weapon = new_weapon
+				overwrite = True
+				break
+		if not overwrite:
+			db.weapons.append(new_weapon)
 		db.save_weapons()
 		
 	@commands.command(pass_context=True)
 	async def set_primary_weapon(self, ctx, weapon, help="Set your primary weapon type for the weapon you use most often. If your weapon is special, see $define_weapon."):
 		who = meta.get_character_name(ctx.message.author)
-		await self.gm_set_primary_weapon(ctx, who, weapon)
+		await self.gm.gm_set_primary_weapon(ctx, who, weapon)
 		
 	@commands.command(pass_context=True)
 	async def attack(self, ctx, target, weapon, acc_mod="+0", dmg_mod="+0", help='Roll an attack with a weapon, optionally add Acc and Dmg modifiers.'):
 		who = meta.get_character_name(ctx.message.author)
-		await self.gm_attack(ctx, who, target, weapon, acc_mod, dmg_mod)	
+		await self.gm.gm_attack(ctx, who, target, weapon, acc_mod, dmg_mod)	
 	
 	@commands.command(pass_context=True)
 	async def use(self, ctx, *ability, help='Use an ability.'): # TODO allow the use of items
 		who = meta.get_character_name(ctx.message.author)
-		await self.gm_use(ctx, who, " ".join(ability[:]))
+		await self.gm.gm_use(ctx, who, " ".join(ability[:]))
 		
 	@commands.command(pass_context=True, aliases=['ncast', 'normalcast', 'normal_cast'])
 	async def cast(self, ctx, *spell, help='Cast a spell.'):
 		who = meta.get_character_name(ctx.message.author)
 		spell = " ".join(spell[:])
-		await self.gm_cast(ctx, who, 1, spell)
+		await self.gm.gm_cast(ctx, who, 1, spell)
 		
 	@commands.command(pass_context=True, aliases=['hcast', 'halfcast'])
 	async def half_cast(self, ctx, *spell, help='Half-cast a spell.'):
 		who = meta.get_character_name(ctx.message.author)
 		spell = " ".join(spell[:])
-		await self.gm_cast(ctx, who, 0, spell)
+		await self.gm.gm_cast(ctx, who, 0, spell)
 		
 	@commands.command(pass_context=True, aliases=['dcast', 'doublecast'])
 	async def double_cast(self, ctx, *spell, help='Double-cast a spell.'):
 		who = meta.get_character_name(ctx.message.author)
 		spell = " ".join(spell[:])
-		await self.gm_cast(ctx, who, 2, spell)
+		await self.gm.gm_cast(ctx, who, 2, spell)
 		

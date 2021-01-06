@@ -1,4 +1,4 @@
-# --- Josh Aaron Miller 2020
+# --- Josh Aaron Miller 2021
 # --- Web scraping helper file via beautiful soup
 
 import time, requests, datetime, re
@@ -33,7 +33,7 @@ def get_ability_contents(ability, URL):
 	last_had_newline = False
 	for hit in soup.find_all('p'):
 		text = hit.get_text()
-		if ability == text[:-1]:
+		if ability in text: # FIXME not good at getting substrings, e.g. "Grow" vs "Growth" vs "Growth II"
 			found = True
 		if found and (text.isspace() or (text.startswith('\n') and last_had_newline)):
 			return contents

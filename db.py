@@ -1,4 +1,4 @@
-# --- Josh Aaron Miller 2020
+# --- Josh Aaron Miller 2021
 # --- Data needed by all Vennt Discord Bot modules
 
 import json
@@ -22,6 +22,7 @@ MORE = '➡️'
 
 ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
 
+# Entities
 ENEMIES = []
 PLAYERS = []
 
@@ -47,12 +48,23 @@ def is_number_emoji(emoji):
 	return False
 	
 def find(name):
+	if name is None:
+		raise ValueError("Null passed to db.find")
+		
+	print("db.find: " + name)
 	for e in ENEMIES:
 		if e.display_name() == name:
 			return e
 	for p in PLAYERS:
 		if p.name == name:
 			return p		
+	print("db.find: none found")
+	return None
+	
+def get_weapon(name):
+	for weapon in weapons:
+		if weapon["name"] == name:
+			return weapon
 	return None
 
 def get_entity_file(name):

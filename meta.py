@@ -1,4 +1,4 @@
-# --- Josh Aaron Miller 2020
+# --- Josh Aaron Miller 2021
 # --- meta/misc commands for Discord Vennt Bot
 
 import discord
@@ -34,18 +34,17 @@ TEST_SCRIPT_EASY = [
 		]
 
 TEST_SCRIPT_HARD = [
-		"I will spend one action to [Aim] then shoot one of the rats with my rifle       ",
-		"[aim]                                                                           ",
-		"shoot [rat A] with [rifle]                                                      ",
-		"I'll [move] away from the enemies                                               ",
-		"then attack the [skeleton] with [crippling shot]                                ",
-		"I end my turn                                                                   ",
-		"I'll use [Instant Focus]                                                        ",
-		"then attack [rat B] with the [rifle]                                            ",
-		"I end my turn                                                                   ",
-		"I'm going to [Aim]                                                              ",
-		"then shoot the [skeleton] in the head with [disabling shot]                     ",
-		"[TIL this song is more than the opening fanfare]                                "
+		">[aim]                                                                           ",
+		">shoot [rat A] with [rifle]                                                      ",
+		">I'll [move] away from the enemies                                               ",
+		">then attack the [skeleton] with [crippling shot]                                ",
+		">I end my turn                                                                   ",
+		">I'll use [Instant Focus]                                                        ",
+		">then attack [rat B] with the [rifle]                                            ",
+		">I end my turn                                                                   ",
+		">I'm going to [Aim]                                                              ",
+		">then shoot the [skeleton] in the head with [disabling shot]                     ",
+		">[TIL this song is more than the opening fanfare]                                "
 ]
 
 
@@ -117,6 +116,22 @@ class Meta(commands.Cog):
 					await ctx.message.add_reaction(db.OK)
 					return
 		await ctx.message.add_reaction(db.NOT_OK)
+		
+	@commands.command(pass_context=True, aliases=['aliases'])
+	async def myaliases(self, ctx, help='See the aliases you set.'):
+		who = str(ctx.message.author)
+		ret = "```\n{0}\n```"
+		aliases = []
+		for user in self.aliases:
+			if user["user"] == who:
+				for key, val in user.items():
+					if key == "user":
+						continue
+					aliases.append(key + " -- " + val)
+		if aliases != []:
+			await ctx.send(ret.format("\n".join(aliases)))
+		else:
+			await ctx.send("No aliases saved.")
 
 	@commands.command(pass_context=True)
 	async def uptime(self, ctx, help = "Get bot's lifespan"):
@@ -133,6 +148,7 @@ class Meta(commands.Cog):
 		matches, URL = webscraper.find_ability(*args)
 		if len(matches) == 1:
 			contents = webscraper.get_ability_contents(matches[0], URL)
+			print("meta.whatis: " + str(contents))
 			contents.append("From: <" + URL + ">")
 			# ----- split contents into msgs < 2000 char
 			msg_length = 0
@@ -151,7 +167,12 @@ class Meta(commands.Cog):
 				await ctx.send(msg)
 			# ----- end sending msg
 		elif len(matches) > 1:
-			await ctx.send("Did you mean: " + " or ".join(matches))
+			if len(matches) < 10:
+				await ctx.send("Did you mean: " + " or ".join(matches))
+			else:
+				await ctx.send("Your query matches too many abilities. Please try being more specific.")
+				print("meta.whatis: found too many matches")
+				print(matches)
 		else:
 			ability = " ".join(args[:])
 			await ctx.send("No ability found: " + ability)

@@ -60,7 +60,7 @@ def getAbilities(url):
 		# We need to not add an unlock line to the ability list
 		# Yes, this could be one check, but that line would
 		# be egregiously long
-		elif "Cost: " in text and "Unlocks: " not in pTags[idx-1]:
+		elif text.startswith("Cost: ") and "Unlocks: " not in pTags[idx-1]:
 			abilityName = pTags[idx-1]
 			abilities.append(abilityName)
 

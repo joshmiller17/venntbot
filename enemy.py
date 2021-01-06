@@ -17,7 +17,7 @@ class Enemy(entity.Entity):
 		return self.name + (str(self.id) if self.id > 1 else "")
 		
 	def __str__(self):
-		ret = "[Enemy: " + self.name + "]"
+		return "[Enemy: " + self.name + "]"
 		
 	def read_from_file(self):
 		e = db.get_enemy_file(self.name)

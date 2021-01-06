@@ -1,4 +1,4 @@
-# --- Josh Aaron Miller 2020
+# --- Josh Aaron Miller 2021
 # --- Stat-based commands
 import discord
 from discord.ext import commands
@@ -79,12 +79,12 @@ class Stats(commands.Cog):
 		
 	@commands.command(pass_context=True)
 	async def gm_check(self, ctx, who, stat, help = "Roll a check for someone."):
-		attr_val = db.find(who).get_stat(attr)
+		attr_val = db.find(who).get_stat(stat)
 		d1 = d6()
 		d2 = d6()
 		d3 = d6()
 		res = d1+d2+d3+attr_val
-		await ctx.send(who + "'s " + which.upper() + " check: **" + str(res) +
+		await ctx.send(who + "'s " + stat.upper() + " check: **" + str(res) +
 		"** ({0},{1},{2} + {3})".format(d1,d2,d3,attr_val))
 
 	@commands.command(pass_context=True)
@@ -141,7 +141,7 @@ class Stats(commands.Cog):
 
 	@commands.command(pass_context=True)
 	async def attr(self, ctx, who, which, help="Get someone's attributes. Usage: $who name attribute"):
-		await ctx.send(who + "'s " + attr + " is " + db.find(who).get_stat(attr))
+		await ctx.send(who + "'s " + which + " is " + db.find(who).get_stat(which))
 
 
 	@commands.command(pass_context=True)

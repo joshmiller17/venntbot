@@ -6,6 +6,9 @@ from collections import defaultdict
 import importlib
 db = importlib.import_module("db")
 sheets = importlib.import_module("sheets")
+stats = importlib.import_module("stats")
+mod = importlib.import_module("modifier")
+
 
 ACTIONS_PER_TURN = 3
 REACTIONS_PER_TURN = 1
@@ -14,7 +17,7 @@ REACTIONS_PER_TURN = 1
 class Entity:
 	def __init__(self, name):
 		self.name = name
-		self.mods = []
+		self.mods = mod.ModifierList()
 		
 		self.actions = ACTIONS_PER_TURN
 		self.reactions = REACTIONS_PER_TURN
@@ -38,11 +41,22 @@ class Entity:
 		
 	def get_stat(self, stat):
 		stat = stat.upper()
-		return self.attrs[stat]
+		ret = self.attrs[stat]
+		mods = self.mods.get_modifier_by_stat(stat)
+		if mods is not None:
+			ret += mods.total()
+		return ret
 		
 	def more(self):
-		ret = self.name + "\n"
-		ret += str(self.attrs["HP"]) + " HP"
+		status = []
+		for stat, m in self.mods.mods.items():
+			if m is not None:
+				status.append("   {0} {1} ({2})".format(m.total(), stat, ", ".join(m.sources)))
+		if status != []:
+			status = "\nEffects:\n{0}".format("\n".join(status))
+		else:
+			status = ""
+		ret = "```\n{0}\nHP: {1}{2}```".format(self.display_name(), stats.get_status(self.name), status)
 		return ret
 		
 	def new_turn(self):
@@ -158,30 +172,3 @@ class Entity:
 				continue # ignore X, *, Attack, Passive, etc
 			await self.change_resource_verbose(ctx, key, -1 * val)
 		return able_to_calculate
-		
-	
-	def add_modifier(self, name, stat, val, stacks=False):
-		stat = stat.upper()
-		name = name.lower()
-		new_mod = {"name" : name, "stat" : stat, "val" : val}
-		stacked = False
-		if stacks:
-			for m in mods:
-				if m["name"] == name:
-					m["val"] += val
-					stacked = True
-		if not stacked:
-			self.remove_modifier(name)
-			mods.append(m)
-			
-	def get_modifier(self, name):
-		for m in mods:
-			if m["name"] == name:
-				return m["val"]
-		return None
-
-		
-	def remove_modifier(self, name):
-		for m in mods:
-			if m["name"] == name:
-				mods.remove(m)
