@@ -14,7 +14,7 @@
 - Each class builds its own copy of Logger: logging uses this instead of print statements
 - Naming conventions:
   - who/target/attacker: the human-readable string referring to an entity, equivalent to `entity.display_name()`
-  - ent: the entity object for a player or enemy, equivalent to `db.find(who)`
+  - e/ent/entity: the entity object for a player or enemy, equivalent to `db.find(who)`
   - *_ent: the object for a named entity, e.g. target_ent
 - Data conventions:
   - Stats are in ALL_CAPS (ACC, VIM, HP) and get converted immediately
