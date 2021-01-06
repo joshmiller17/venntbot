@@ -20,4 +20,4 @@
 - Data conventions:
   - Stats are in ALL_CAPS (ACC, VIM, HP) and get converted immediately
   - Entity names are unchanged
-  - Effect descriptions are in lower_case and get converted immediately
+  - Descriptions and other names, such as weapons, are in lower_case and get converted immediately
