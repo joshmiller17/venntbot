@@ -30,6 +30,7 @@ def make_ability(name):
 	contents = webscraper.get_ability_contents(name, URL)
 	pur_cost = None
 	act_cost = None
+	read_cost = ""
 	eff = ""
 	exp_for = None
 	m_cost = None
@@ -53,6 +54,7 @@ def make_ability(name):
 			cast_dl = parse_casting_dl(line)
 		elif line.startswith("Activation:"):
 			act_cost = parse_activation_cost(line)
+			read_cost = line[12:-1]
 			parsed_activation = True
 		elif line.startswith("Range:"):
 			ability_range = parse_range(line)
@@ -61,8 +63,8 @@ def make_ability(name):
 			
 		parsed_name = True
 			
-	ret =  Ability(name, contents, purchase_cost=pur_cost, activation_cost=act_cost, effect=eff, unlocks=unlock, prerequisites=prereq, expedited_for=exp_for, mp_costs=m_cost, casting_dl=cast_dl, range=ability_range)
-	logger.log("make_ability", ret)
+	ret =  Ability(name, contents, purchase_cost=pur_cost, activation_cost=act_cost, readable_cost=read_cost, effect=eff, unlocks=unlock, prerequisites=prereq, expedited_for=exp_for, mp_costs=m_cost, casting_dl=cast_dl, range=ability_range)
+	logger.log("make_ability", str(ret))
 	return ret
 	
 
@@ -107,10 +109,14 @@ def parse_activation_cost(line):
 				cost["Passive"] = True
 				continue
 			if "Activation" not in match: # skip "capture all" group
+				match = match.replace("Hero Point", "Point")
 				cost_str = match.split(' ')
 				type = cost_str[1][0] # first char of word
 				amt = cost_str[0]
-				cost[type] = amt
+				try:
+					cost[type] = int(amt)
+				except:
+					cost["Special"] = match # captures X Vim, 3* MP, etc -- deal with this later
 	return cost
 
 def parse_range(line):
@@ -118,13 +124,14 @@ def parse_range(line):
 
 
 class Ability():
-	def __init__(self, name, contents, purchase_cost, activation_cost, effect, unlocks=None, prerequisites=None, expedited_for = None, mp_costs = None, casting_dl = None, range = None):
+	def __init__(self, name, contents, purchase_cost, activation_cost, readable_cost, effect, unlocks=None, prerequisites=None, expedited_for = None, mp_costs = None, casting_dl = None, range = None):
 		self.name = name
 		self.contents = contents
 		self.purchase_cost = purchase_cost
 		self.unlocks = unlocks
 		self.prerequisites = prerequisites
 		self.cost = activation_cost
+		self.readable_cost = readable_cost
 		self.expedited = expedited_for
 		self.is_spell = (mp_costs != None) or (casting_dl != None)
 		self.mp_costs = mp_costs
@@ -133,12 +140,17 @@ class Ability():
 		self.effect = effect
 	
 	def is_valid(self):
-		if not self.name or not self.contents or not self.cost:
+		if not self.name or not self.contents or self.cost is None:
 			return False
 		return True
 		
-	def is_spell(self):
-		return self.mp_costs is not None or self.casting_dl is not None
+	def is_spendable(self):
+		if self.cost is None or self.cost == {}:
+			return False
+		for key, val in self.cost.items():
+			if key in ['A', 'R', 'V', 'M', 'P']:
+				return True
+		return False
 	
 	def __str__(self):
 		ret = "[" + self.name + "]\n"

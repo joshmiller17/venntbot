@@ -1,7 +1,7 @@
 # --- Josh Aaron Miller 2021
 # --- Logger class to help organize debug output
 
-import time
+import time, traceback
 
 class Logger():
 
@@ -14,8 +14,10 @@ class Logger():
 		
 	def warn(self, function, message):
 		t = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime())
-		print("WARNING: [" + t + "] " + self.class_name + "." + function + ": " + message)
+		print("[" + t + "] WARNING: " + self.class_name + "." + function + ": " + message)
 	
 	def err(self, function, message):
 		t = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime())
-		print("ERROR: [" + t + "] " + self.class_name + "." + function + ": " + message)
+		print("[" + t + "] ERROR: " + self.class_name + "." + function + ": " + message)
+		for line in traceback.format_stack():
+			print(line.strip())

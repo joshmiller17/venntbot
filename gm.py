@@ -116,7 +116,8 @@ class GM(commands.Cog):
 				spent.append("{0} spent {1} MP".format(entity.display_name(), val))
 			if key == 'V' and entity.actions < val:
 				spent.append("{0} spent {1} Vim".format(entity.display_name(), val))
-		await ctx.send("\n".join(spent))
+		if spent != []:
+			await ctx.send("\n".join(spent))
 		
 	@commands.command(pass_context=True)
 	async def gm_use(self, ctx, who, *ability, help="Use someone's ability. For GM use only."):

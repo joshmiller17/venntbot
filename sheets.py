@@ -142,13 +142,12 @@ class Sheets(commands.Cog):
 	# Load Google Sheet -> db -> characters.json
 	@commands.command(pass_context=True)
 	async def load(self, ctx, who, help="Load a character sheet, or 'all' for everyone (takes several minutes)."):
+		await ctx.message.add_reaction(db.THINKING)
 		if who == 'all':
-			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
 				print("Loading " + p)
 				await self.load(ctx, p)
 				time.sleep(60) # need to be extra nice to the server, this makes a lot of calls
-			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		else:
 			e = db.find(who)
 			for stat in STATS.keys():
@@ -157,8 +156,8 @@ class Sheets(commands.Cog):
 			for stat in READ_ONLY_STATS.keys():
 				e.attrs[stat] = await do_get(ctx, who, stat)
 				time.sleep(1)
-			e.skills = do_get_abilities(ctx, who)
+			e.skills = await do_get_abilities(ctx, who)
 			e.write() # write db -> characters.json
 		await ctx.message.add_reaction(db.OK)
-	
+		await ctx.message.remove_reaction(db.THINKING, ctx.me)
 	

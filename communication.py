@@ -15,6 +15,7 @@ init = importlib.import_module("initiative")
 abilityClass = importlib.import_module("ability")
 act = importlib.import_module("action")
 meta = importlib.import_module("meta")
+webscraper = importlib.import_module("webscraper")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("communication")
 
@@ -25,16 +26,20 @@ class CommState(Enum):
 	
 	
 COMM_STATE = None
+ABILITY_LIST_CACHE = None
 
 async def suggest_quick_actions(ctx, entity):
+	global COMM_STATE
 	if entity is None:
 		return # No one's turn
+		
+	COMM_STATE = None
 		
 	available_actions = {"Basic attack" : db.SWORDS, "Move" : db.RUNNING, "End turn" : db.SKIP, "More" : db.MORE}
 	actions_left = entity.actions
 
 	# Repeat
-	their_last_action =  act.get_last_action(user=entity)
+	their_last_action = act.get_last_action(user=entity)
 	if their_last_action is not None and their_last_action.type != act.ActionType.ATTACK:
 		abiObj = abilityClass.get_ability(their_last_action.description)
 		if entity.can_afford(abiObj.cost):
@@ -78,38 +83,67 @@ async def make_choice_list(self, ctx, choices, offset):
 			choice_map["More..."] = db.MORE
 			has_more = True
 			break
-		choice_map[e] = db.NUMBERS[count]
+		choice_map[c] = db.NUMBERS[count]
 		count += 1
 		
 	ret = []
 	for c, emoji in choice_map.items():
 		ret.append("{0} {1}".format(emoji, c))
 	
-	m = await ctx.send("```{0}\n```".format("\n".join(ret)))
+	m = await ctx.send("```\n{0}\n```".format("\n".join(ret)))
 	for i in range(count):
 		await m.add_reaction(db.NUMBERS[i])
 	if has_more:
 		await m.add_reaction(db.MORE)
 	db.QUICK_ACTION_MESSAGE = m
 	
+# returns valid abilities
 async def make_ability_list(self, ctx, offset):
+	global COMM_STATE, ABILITY_LIST_CACHE
+	await db.QUICK_CTX.message.add_reaction(db.THINKING)
 	ability_list = []
 	entity = db.find(self.initCog.whose_turn)
-	for a in entity.skills:
-		# TODO check if that ability is affordable, if so, list its cost
-		# TODO throw a warning if can't find / understand ability
-		ability_list.append(a)
-	await make_choice_list(self, ctx, ability_list, offset)
+	
+	if not ABILITY_LIST_CACHE:
+		ABILITY_LIST_CACHE = []
+		for a in entity.skills:
+			matches, URL = webscraper.find_ability(a)
+			
+			if len(matches) != 1:
+				logger.warn("make_ability_list", "Could not find ability {0}, had {1} matches".format(a, len(matches)))
+				continue
+				
+			abiObj = abilityClass.get_ability(a)
+			
+			if not abiObj.is_valid():
+				logger.warn("make_ability_list", "Invalid ability: {0}".format(a))
+				continue
+				
+			if not entity.can_afford(abiObj.cost):
+				logger.warn("make_ability_list", "Can't afford: {0}".format(a))
+				continue
+				
+			if not abiObj.is_spendable():
+				logger.warn("make_ability_list", "{0} isn't spendable".format(a))
+				continue
+				
+			ABILITY_LIST_CACHE.append(abiObj) # OK skill!
+	
+	for abiObj in ABILITY_LIST_CACHE:			
+		ability_list.append("{0} -- {1}".format(abiObj.name, abiObj.readable_cost))
 	await ctx.send("Use which ability?")
+	await make_choice_list(self, ctx, ability_list, offset)
 	COMM_STATE = CommState.ABILITIES
 	self.ability_list_offset += 9
+	await db.QUICK_CTX.message.remove_reaction(db.THINKING, ctx.me)
 	
 async def make_enemy_list(self, ctx, offset):
+	global COMM_STATE
 	enemy_list = []
 	for e in db.ENEMIES:
 		enemy_list.append(e.display_name() + " - " + stats.get_status(e))
-	await make_choice_list(self, ctx, enemy_list, offset)
 	await ctx.send("Attack who?")
+	await make_choice_list(self, ctx, enemy_list, offset)
 	COMM_STATE = CommState.ATTACK
 	self.enemy_list_offset += 9
 	
@@ -137,10 +171,11 @@ class Communication(commands.Cog):
 				
 	@commands.command(pass_context=True)
 	async def quick(self, ctx, help="Show available quick actions."):
-		await self.suggest_quick_actions(ctx, db.find(self.initCog.whose_turn))
+		await suggest_quick_actions(ctx, db.find(self.initCog.whose_turn))
 	
 	@commands.Cog.listener()
 	async def on_reaction_add(self, reaction, user):
+		global COMM_STATE, ABILITY_LIST_CACHE
 		if user == self.bot.user:
 			return
 		if reaction.message == db.QUICK_ACTION_MESSAGE:
@@ -162,6 +197,7 @@ class Communication(commands.Cog):
 					else:
 						self.ability_list_offset = 0
 						self.chosen_ability = None
+						ABILITY_LIST_CACHE = None
 						await make_ability_list(self, db.QUICK_CTX, self.ability_list_offset)
 						
 				if reaction.emoji == db.SWORDS:
@@ -179,24 +215,24 @@ class Communication(commands.Cog):
 					elif COMM_STATE == CommState.ABILITIES:
 						self.ability_list_offset -= 9
 						ability_index = db.NUMBERS.index(reaction.emoji) + self.ability_list_offset
-						choice = who_ent.skills[ability_index]
-						abiObj = abilityClass.get_ability(choice)
-						if abiObj.is_spell():
+						abiObj = ABILITY_LIST_CACHE[ability_index]
+						self.chosen_ability = abiObj
+						if abiObj.is_spell:
 							await ask_cast_strength(db.QUICK_CTX)
 						else:
-							await self.gm.gm_use(db.QUICK_CTX, who, choice)
+							await self.gm.gm_use(db.QUICK_CTX, who, abiObj.name)
 						await suggest_quick_actions(db.QUICK_CTX, who_ent) 
 					else:
 						raise ValueError("communication.on_reaction_add: CommState was None")
 						
 				if reaction.emoji == db.FAST:
-					await self.gm.gm_cast(db.QUICK_CTX, who, 0, self.chosen_ability)
+					await self.gm.gm_cast(db.QUICK_CTX, who, 0, self.chosen_ability.name)
 					
 				if reaction.emoji == db.MAGIC:
-					await self.gm.gm_cast(db.QUICK_CTX, who, 1, self.chosen_ability)
+					await self.gm.gm_cast(db.QUICK_CTX, who, 1, self.chosen_ability.name)
 					
 				if reaction.emoji == db.POWERFUL:
-					await self.gm.gm_cast(db.QUICK_CTX, who, 2, self.chosen_ability)
+					await self.gm.gm_cast(db.QUICK_CTX, who, 2, self.chosen_ability.name)
 					
 				if reaction.emoji == db.RUNNING:
 					success = await who_ent.use_resources_verbose(db.QUICK_CTX, {'A':1})
