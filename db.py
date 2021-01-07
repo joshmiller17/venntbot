@@ -21,6 +21,10 @@ REPEAT = '🔁'
 THINKING = '🤔'
 NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
 MORE = '➡️'
+SCROLL = '📜'
+FAST = '⚡'
+MAGIC = '🪄'
+POWERFUL = '💪'
 
 ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
 
@@ -66,6 +70,13 @@ def find(name):
 # get data from file
 def load_enemy(name):
 	for entity in enemies:
+		if entity["name"] == name:
+			return entity
+	return None
+	
+# get data from file
+def load_player(name):
+	for entity in characters:
 		if entity["name"] == name:
 			return entity
 	return None

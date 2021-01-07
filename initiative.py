@@ -20,22 +20,23 @@ logger = logClass.Logger("initiative")
 async def add_turn_internal(self, ctx, display_name, who, result):
 	multiturn = 2
 	d_name = display_name
+	entity = db.find(who)
 	while d_name in self.turns.keys():
 		d_name = d_name + " (" + str(multiturn) + ")"
 		multiturn += 1
 
-	if not db.find(who):
+	if not entity:
 		await ctx.send("No entity found named " + display_name)
 		await ctx.message.add_reaction(db.NOT_OK)
 		return
 		
-	self.turns[d_name] = int(result) + 0.01 * db.find(who).get_stat("INIT") + 0.001 * random.random()
+	self.turns[d_name] = int(result) + 0.01 * entity.get_stat("INIT") + 0.001 * random.random()
 	await ctx.message.add_reaction(db.OK)
 	
 async def list_enemies_internal(ctx):
 	ret = []
 	for e in db.ENEMIES:
-		ret.append(e.display_name() + " - " + stats.get_status(e.display_name()))
+		ret.append(e.display_name() + " - " + stats.get_status(e))
 	if ret != []:
 		await ctx.send("```{0}```".format("\n".join(ret)))
 	else:
@@ -46,7 +47,7 @@ class Initiative(commands.Cog):
 		self.bot = bot
 		self.turns = {} # who : value + 0.01 * score + 0.001* rand float for tie breaking
 		self.init_index = 99
-		self.whose_turn = None
+		self.whose_turn = None # string
 		
 	@commands.command(pass_context=True)
 	async def test(self, ctx, help="For debug only."):
@@ -61,20 +62,20 @@ class Initiative(commands.Cog):
 			await ctx.send("Not in combat.")
 			return
 		sorted_turns = sorted(self.turns.items(), key=operator.itemgetter(1),reverse=True)
-		logger.log("next_turn",sorted_turns)
+		logger.log("next_turn",str(sorted_turns))
 		for who, val in sorted_turns:
 			if val < self.init_index:
 				self.init_index = val
 				await ctx.send("Now " + who + "'s turn.")
 				if who.startswith("[ENEMY]"):
 					who = who[who.index('x')+2:]
-					logger.log("whatis", "who is " + who)
+					logger.log("next_turn", "who is " + who)
 				else: # for now, don't process enemy turns, do later
 					entity = db.find(who)
 					entity.new_turn()
 					if isinstance(entity, playerClass.Player):
-						await communication.suggest_quick_actions(ctx, who)
-				self.whose_turn = who				
+						await communication.suggest_quick_actions(ctx, entity)
+				self.whose_turn = who			
 				return
 		# reached the bottom, wrap around
 		self.init_index = 99
@@ -98,8 +99,7 @@ class Initiative(commands.Cog):
 		for e in new_enemies:
 			db.ENEMIES.append(e)
 			logger.log("add_enemies", e.display_name())
-		who = db.ENEMIES[-1].display_name()
-		await add_turn_internal(self, ctx, "[ENEMY] " + str(num) + "x " + e.name, who, stats.do_check(who, "INIT"))
+		await add_turn_internal(self, ctx, "[ENEMY] " + str(num) + "x " + name, name, stats.do_check(new_enemies[0], "INIT"))
 		await self.turn_order(ctx)
 
 	@commands.command(pass_context=True)
@@ -123,7 +123,7 @@ class Initiative(commands.Cog):
 		await ctx.message.add_reaction(db.THINKING)
 		await self.clear_fight(ctx)
 		for player in db.get_player_names():
-			await self.add_turn(ctx, player, stats.do_check(player, "INIT"))
+			await self.add_turn(ctx, player, stats.do_check(db.find(player), "INIT"))
 		await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		await self.turn_order(ctx)
 		if go:

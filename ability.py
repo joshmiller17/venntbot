@@ -96,7 +96,7 @@ def parse_activation_cost(line):
 	cost = {}
 	matches = re.findall("Activation: ((?:Passive)|(\d Actions?)|(Attack)|(?:, )|(\d*\**X? Actions?)|(\d*\**X? Reactions?)|(\d*\**X? Vim)|(\d*\**X? MP))*", line)
 	for match_tuple in matches:
-		logger.log("parse_activation_cost", "tuple: " str(match_tuple))
+		logger.log("parse_activation_cost", "tuple: " + str(match_tuple))
 		for match in match_tuple:
 			if match == "" or match == ", ":
 				continue
@@ -132,6 +132,13 @@ class Ability():
 		self.range = range
 		self.effect = effect
 	
+	def is_valid(self):
+		if not self.name or not self.contents or not self.cost:
+			return False
+		return True
+		
+	def is_spell(self):
+		return self.mp_costs is not None or self.casting_dl is not None
 	
 	def __str__(self):
 		ret = "[" + self.name + "]\n"

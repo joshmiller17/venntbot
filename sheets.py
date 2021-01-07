@@ -13,6 +13,8 @@ import importlib
 db = importlib.import_module("db")
 stats = importlib.import_module("stats")
 meta = importlib.import_module("meta")
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("sheets")
 
 # style: globals are in all caps
 
@@ -73,7 +75,6 @@ def update_to_sheets(spreadsheet_id, sheet_range, vs):
 	
 async def set_stat(ctx, who, amount, stat): # internal call of set command
 	print("Set stat " + who + " " + str(amount) + " " + stat)
-	stat = stats.clean_modifier(stat)
 	stat = stat.upper()
 	if stat not in STATS.keys():
 		await ctx.send("Unknown stat: " + stat)
@@ -91,6 +92,11 @@ async def do_get(ctx, who, stat):
 	else:
 		cell = "Stats!" + READ_ONLY_STATS[stat]
 	return int(get_from_sheets(get_sheet_id(who), cell)[0][0])
+	
+async def do_get_abilities(ctx, who):
+	skills = get_from_sheets(get_sheet_id(who), "Skills!A7:A1000")
+	skills = [s[0] for s in skills] # de-listify
+	return skills
 
 
 class Sheets(commands.Cog):
@@ -112,12 +118,12 @@ class Sheets(commands.Cog):
 		if char_name != "GM" and who != "me" and who != char_name:
 			ctx.message.add_reaction(db.NOT_OK)
 			return
-		amount = int(amount.replace("+", ""))
+		amount = stats.clean_modifier(amount)
 		amount = amount + await get(self, ctx, who, stat)
 		await set_stat(ctx, who, amount, stat)
 
 	@commands.command(pass_context=True)
-	async def get(self, ctx, who, stat, help="See a stat value."):
+	async def read_sheet(self, ctx, who, stat, help="See a stat on a character sheet."):
 		ctx.send( await do_get(ctx, who, stat) )
 
 	# Save characters.json -> Google Sheet
@@ -130,24 +136,29 @@ class Sheets(commands.Cog):
 			e = db.find(player)
 			for stat in STATS.keys():
 				await set_stat(ctx, player, getattr(e, stat), stat)
+			# TODO save primary weapon info somewhere?
+			# TODO save newly acquired skills
 	
-	# Load Google Sheet -> characters.json
+	# Load Google Sheet -> db -> characters.json
 	@commands.command(pass_context=True)
-	async def load(self, ctx, player, help="Load a character sheet, or 'all' for everyone (takes several minutes)."):
-		if player == 'all':
+	async def load(self, ctx, who, help="Load a character sheet, or 'all' for everyone (takes several minutes)."):
+		if who == 'all':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
 				print("Loading " + p)
 				await self.load(ctx, p)
-				time.sleep(60) # need to be extra nice to the server
+				time.sleep(60) # need to be extra nice to the server, this makes a lot of calls
 			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		else:
-			e = db.find(player)
+			e = db.find(who)
 			for stat in STATS.keys():
-				e.attrs[stat] = await do_get(ctx, player, stat)
+				e.attrs[stat] = await do_get(ctx, who, stat)
+				time.sleep(1)
 			for stat in READ_ONLY_STATS.keys():
-				e.attrs[stat] = await do_get(ctx, player, stat)
-			e.write()
+				e.attrs[stat] = await do_get(ctx, who, stat)
+				time.sleep(1)
+			e.skills = do_get_abilities(ctx, who)
+			e.write() # write db -> characters.json
 		await ctx.message.add_reaction(db.OK)
 	
 	

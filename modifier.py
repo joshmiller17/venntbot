@@ -1,6 +1,10 @@
 # --- Josh Aaron Miller 2020
 # --- Entity modifier
 
+import importlib
+logClass = importlib.import_module("logger")
+logger = logClass.Logger("modifier")
+
 ALWAYS_STACKS = ["BURNING", "BLEEDING"]
 
 class Modifier:
@@ -22,21 +26,21 @@ class ModifierList:
 		
 		stacks = stacks or stat in ALWAYS_STACKS
 		
-		print("modifier.add_modifier: " + name + " " + stat + " " + str(val) + " " + str(stacks))
+		logger.log("add_modifier". name + " " + stat + " " + str(val) + " " + str(stacks))
 		
 		if not stacks:
 			if not stat in self.mods or self.mods[stat].total() <= val:
-				print("modifier.add_modifier: writing")
+				logger.log("add_modifier", "writing")
 				new_mod = Modifier(stat, [name], [val])
 				self.mods[stat] = new_mod # overwrite
 
 		else:
 			if not stat in self.mods:
-				print("modifier.add_modifier: new stack")
+				logger.log("add_modifier", "new stack")
 				new_mod = Modifier(stat, [name], [val])
 				self.mods[stat] = new_mod
 			else:
-				print("modifier.add_modifier: adding to stack")
+				logger.log("add_modifier", "adding to stack")
 				self.mods[stat].sources.append(name)
 				self.mods[stat].vals.append(val)
 										

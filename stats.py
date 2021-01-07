@@ -21,11 +21,9 @@ def half(num):
 def is_player(name):
 	return name in db.get_player_names()
 	
-def do_check(who, attr): # internal call to check; allow entity or name
-	if isinstance(who, str):
-		who = db.find(who)
-	attr_val = who.get_stat(attr)
-	logger.log("do_check", who + " Rolling " + attr + " check for " + who.name + " with mod " + str(attr_val))
+def do_check(entity, attr):
+	attr_val = entity.get_stat(attr)
+	logger.log("do_check", " Rolling " + attr + " check for " + entity.display_name() + " with mod " + str(attr_val))
 	return d6() + d6() + d6() + attr_val
 	
 def clean_modifier(v):
@@ -49,10 +47,9 @@ def compare_hp(current, max):
 		return "near death"
 	return "dead"
 	
-def get_status(who):
-	logger.log("get_status", who)
-	e = db.find(who)
-	return compare_hp(e.get_stat("HP"), e.get_stat("MAX_HP"))
+def get_status(entity):
+	logger.log("get_status", entity.display_name())
+	return compare_hp(entity.get_stat("HP"), entity.get_stat("MAX_HP"))
 
 async def do_roll(ctx, *args):
 	rollstr = "".join(args[:]) # remove spaces
@@ -61,13 +58,9 @@ async def do_roll(ctx, *args):
 	await ctx.send(str(r))
 	return r.total
 	
-async def do_examine(ctx, target):
-	if target == 'all':
-		for e in entities:
-			await do_examine(e.name)
-		return
-	status = get_status(target)
-	await ctx.send(target + " is looking " + status + "!")
+async def do_examine(ctx, target_ent):
+	status = get_status(target_ent)
+	await ctx.send(target_ent.display_name() + " is looking " + status + "!")
 	
 
 class Stats(commands.Cog):
@@ -129,14 +122,14 @@ class Stats(commands.Cog):
 	async def gm_spend(self, ctx, who, value, stat, help="Spend someone's stat. For GM use only."):
 		value = clean_modifier(value)
 		await self.gm_modify(ctx, who, -1 * value, stat)
-		
+	
 	@commands.command(pass_context=True)
-	async def spend(self, ctx, value, stat, help="Spend a stat."):
+	async def spend(self, ctx, value, stat, help="Spend a stat (negative value assumed)."):
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm_modify(ctx, who, -1 * value, stat)
 		
 	@commands.command(pass_context=True)
-	async def modify(self, ctx, value, stat, help="Modify your stat."):
+	async def modify(self, ctx, value, stat, help="Modify your stat (positive value assumed)."):
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm_modify(ctx, who, value, stat)
 
@@ -146,10 +139,14 @@ class Stats(commands.Cog):
 
 
 	@commands.command(pass_context=True)
-	async def roll(self, ctx, *args, help = "Basic dice rolling parser. For flow, roll 4d6kh3 (roll 4, keep highest 3). Comments can go in brackets."):
-		await do_roll(ctx, *args)
+	async def roll(self, ctx, *roll, help = "Basic dice rolling parser. For flow, roll 4d6kh3 (roll 4, keep highest 3). Comments can go in brackets."):
+		await do_roll(ctx, *roll)
 
 
 	@commands.command(pass_context=True)
 	async def examine(self, ctx, target, help = "Check how healthy someone is, or 'all' to check everyone."):
-		await do_examine(ctx, target)
+		if target == 'all':
+			for e in entities:
+				await do_examine(ctx, e)
+			return
+		await do_examine(ctx, db.find(target))

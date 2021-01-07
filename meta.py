@@ -85,7 +85,7 @@ class Meta(commands.Cog):
 			altered.content = line
 			await ctx.send("`> " + line + "`")
 			await self.bot.on_message(altered)
-			time.sleep(3)
+			time.sleep(2)
 		await ctx.send("Done.")
 	
 
@@ -139,14 +139,14 @@ class Meta(commands.Cog):
 		await ctx.send("I've been up for " + str(datetime.timedelta(seconds = (time.time() - START_TIME))))
 		
 	@commands.command(pass_context=True)
-	async def cost(self, ctx, *args, help = "Get an ability's cost."):
-		name = " ".join(args[:])
+	async def cost(self, ctx, *ability, help = "Get an ability's cost."):
+		name = " ".join(ability[:])
 		ability = abilityClass.get_ability(name)
 		await ctx.send(str(ability.cost))
 
 	@commands.command(pass_context=True)
-	async def whatis(self, ctx, *args, help="Get an ability's info. Usage: $whatis ABILITY. Example: $whatis Basic Cooking"):
-		matches, URL = webscraper.find_ability(*args)
+	async def whatis(self, ctx, *ability, help="Get an ability's info."):
+		matches, URL = webscraper.find_ability(*ability)
 		if len(matches) == 1:
 			contents = webscraper.get_ability_contents(matches[0], URL)
 			logger.log("whatis",str(contents))
@@ -172,9 +172,9 @@ class Meta(commands.Cog):
 				await ctx.send("Did you mean: " + " or ".join(matches))
 			else:
 				await ctx.send("Your query matches too many abilities. Please try being more specific.")
-				logger.log("whatis",found too many matches")
+				logger.log("whatis","found too many matches")
 				logger.log("whatis",matches)
 		else:
-			ability = " ".join(args[:])
+			ability = " ".join(ability[:])
 			await ctx.send("No ability found: " + ability)
 	

@@ -33,15 +33,12 @@ class Entity:
 		raise NotImplementedError
 		
 	def set_stat(self, stat, val):
-		stat = stat.upper()  # should be redundant
 		self.attrs[stat] = val
 		
 	def mod_stat(self, stat, val):
-		stat = stat.upper()  # should be redundant
 		self.attrs[stat] += val
 		
 	def get_stat(self, stat):
-		stat = stat.upper() # should be redundant
 		ret = self.attrs[stat]
 		mods = self.mods.get_modifier_by_stat(stat)
 		if mods is not None:
@@ -57,7 +54,7 @@ class Entity:
 			status = "\nEffects:\n{0}".format("\n".join(status))
 		else:
 			status = ""
-		ret = "```\n{0}\nHP: {1}{2}```".format(self.display_name(), stats.get_status(self.name), status)
+		ret = "```\n{0}\nHP: {1}{2}```".format(self.display_name(), stats.get_status(self), status)
 		return ret
 		
 	def new_turn(self):

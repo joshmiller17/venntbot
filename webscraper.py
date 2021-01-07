@@ -14,7 +14,7 @@ logger = logClass.Logger("webscraper")
 # Returns list of matches and URL string (if found)
 def find_ability(*args):
 	ability = " ".join(args[:])
-	logger.log("find_ability": "Looking for " + ability)
+	logger.log("find_ability", "Looking for " + ability)
 	approximations = []
 	URL = ""
 	for a in db.abilities:

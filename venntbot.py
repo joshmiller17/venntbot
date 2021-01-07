@@ -84,12 +84,12 @@ async def parse(message):
 		acc_mod = "+0"
 		dmg_mod = "+0"
 
-await def do_quit():
+async def do_quit(message):
 	await message.author.send("Goodbye.")
 	logger.log("on_message", "Goodbye")
 	await client.close()
 	
-await def do_tests():
+async def do_tests(message):
 	await message.author.send("Running all tests:")
 	altered = message
 	with open("tests.json") as f:
@@ -129,9 +129,9 @@ async def on_message(message):
 		
 	if isinstance(message.channel, discord.channel.DMChannel):
 		if (message.content == "quit"):
-			await do_quit()
+			await do_quit(message)
 		if (message.content == "test"):
-			await do_tests()
+			await do_tests(message)
 			
 client.add_cog(meta.Meta(client))
 client.add_cog(sheets.Sheets(client))
