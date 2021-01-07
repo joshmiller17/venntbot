@@ -58,16 +58,19 @@ def get_character_name(username):
 	logger.err("get_character_name", "no name found for " + str(username))
 	return ""
 	
-def save_aliases(aliases):
-	with open("aliases.json", 'w') as f:
-		json.dump(aliases, f, indent=4)
-	
+def save_macros(macros):
+	with open("macros.json", 'w') as f:
+		json.dump(macros, f, indent=4)
 	
 class Meta(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
-		with open("aliases.json") as f:
-			self.aliases = json.load(f)
+		try:
+			with open("macros.json") as f:
+				self.macros = json.load(f)
+		except:
+			logger.warn("__init__", "Unable to open macros.json, starting from scratch.")
+			self.macros = []
 
 	@commands.command(pass_context=True)
 	async def ping(self, ctx, help='Pong!'):
@@ -89,50 +92,92 @@ class Meta(commands.Cog):
 		await ctx.send("Done.")
 	
 
-	@commands.command(pass_context=True, aliases=['set_alias', 'newalias', 'new_alias', 'makealias', 'make_alias'])
-	async def setalias(self, ctx, alias, *command, help='Make a shortcut for a commonly used command.'):
+	@commands.command(pass_context=True, aliases=['setalias'])
+	async def setmacro(self, ctx, macro, *command, help='Make a shortcut for a commonly used command. Split new commands using "/". Use "{}" to specify an ad lib to be filled in when the macro is used. Example: $setmacro pingandsay $ping / $say {}'):
 		who = str(ctx.message.author)
 		found = False
-		for user in self.aliases:
+		new_cmd = " ".join(command[:])
+		new_cmd = new_cmd.split(' / ')
+		if len(new_cmd) > 10:
+			await ctx.message.add_reaction(db.NOT_OK)
+			await ctx.send("Macros are limited to 10 commands.")
+			return
+		for cmd in new_cmd:
+			if cmd.startswith("$alias") or cmd.startswith("$macro"):
+				await ctx.message.add_reaction(db.NOT_OK)
+				await ctx.send("To avoid infinite loops, you cannot define a macro which calls another macro.")
+				return
+		for user in self.macros:
 			if user["user"] == who:
-				user[alias] = " ".join(command[:])
+				user[macro] = new_cmd
 				found = True
 				break
 		if not found:
-			new_entry = {"user": who, alias : " ".join(command[:])}
-			self.aliases.append(new_entry)
-		save_aliases(self.aliases)
-		await ctx.send(alias + " saved as " + " ".join(command[:]))
+			new_entry = {"user": who, macro : new_cmd}
+			self.macros.append(new_entry)
+		save_macros(self.macros)
+		await ctx.send(macro + " saved.")
 		
-	@commands.command(pass_context=True, aliases=['usealias', 'use_alias', 'a'])
-	async def alias(self, ctx, alias, help='Use a shortcut you set with $setalias.'):
+	@commands.command(pass_context=True, aliases=['alias'])
+	async def macro(self, ctx, macro, *adlibs, help='Use a shortcut you set with $setmacro. If you gave your macro ad libs, put them after.'):
 		who = str(ctx.message.author)
-		for user in self.aliases:
+		args = list(adlibs)
+		for user in self.macros:
 			if user["user"] == who:
-				if user[alias]:
-					altered = ctx.message
-					altered.content = user[alias]
-					logger.log("alias","new content is " + altered.content)
-					await self.bot.on_message(altered)
-					await ctx.message.add_reaction(db.OK)
+				if user[macro]:
+					for line in user[macro]:
+						altered = ctx.message
+						args_needed = line.count("{}")
+						current_args = []
+						while args_needed > 0:
+							if len(args) < 1:
+								args.append("{}") # add blanks as needed to make the macro valid and show the user what they missed
+							current_args.append(args.pop(0))
+							args_needed -= 1
+						line = line.format(*current_args)
+						altered.content = line
+						logger.log("macro","new content is " + altered.content)
+						await self.bot.on_message(altered)
+						time.sleep(1)
 					return
 		await ctx.message.add_reaction(db.NOT_OK)
 		
-	@commands.command(pass_context=True, aliases=['aliases'])
-	async def myaliases(self, ctx, help='See the aliases you set.'):
+	@commands.command(pass_context=True, aliases=['aliases', 'macros', 'myaliases'])
+	async def mymacros(self, ctx, macro=None, help='See the macros you set, or try $mymacros macro-name to see the details of a particular macro.'):
 		who = str(ctx.message.author)
 		ret = "```\n{0}\n```"
-		aliases = []
-		for user in self.aliases:
+		macros = []
+		for user in self.macros:
 			if user["user"] == who:
 				for key, val in user.items():
 					if key == "user":
 						continue
-					aliases.append(key + " -- " + val)
-		if aliases != []:
-			await ctx.send(ret.format("\n".join(aliases)))
+					if macro is not None:
+						if key == macro:
+							await ctx.send(key + ": " + " / ".join(val))
+							return
+					else:
+						macros.append("{0} -- {1} command(s)".format(key, len(val)))
+		if macros != []:
+			await ctx.send(ret.format("\n".join(macros)))
 		else:
-			await ctx.send("No aliases saved.")
+			if macro is not None:
+				await ctx.send("No macro found named " + macro)
+			else:
+				await ctx.send("No macros saved.")
+			
+			
+	@commands.command(pass_context=True)
+	async def say(self, ctx, *msg, help='Say something as your character. For use with macros.'):
+		who = str(ctx.message.author)
+		character = get_character_name(who)
+		await ctx.send("**{0}**: {1}".format(character, " ".join(msg)))
+	
+	@commands.command(pass_context=True, aliases=['me'])
+	async def emote(self, ctx, *msg, help='Do something as your character. For use with macros.'):
+		who = str(ctx.message.author)
+		character = get_character_name(who)
+		await ctx.send("*{0} {1}*".format(character, " ".join(msg)))
 
 	@commands.command(pass_context=True)
 	async def uptime(self, ctx, help = "Get bot's lifespan"):
