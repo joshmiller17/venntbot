@@ -63,8 +63,12 @@ def save_macros(macros):
 		json.dump(macros, f, indent=4)
 	
 class Meta(commands.Cog):
+	"""Miscellaneous and meta commands."""
+
 	def __init__(self, bot):
 		self.bot = bot
+		
+		
 		try:
 			with open("macros.json") as f:
 				self.macros = json.load(f)
@@ -73,7 +77,8 @@ class Meta(commands.Cog):
 			self.macros = []
 
 	@commands.command(pass_context=True)
-	async def ping(self, ctx, help='Pong!'):
+	async def ping(self, ctx):
+		"""Pong!"""
 		await ctx.send("Pong!")
 		
 	@commands.command(pass_context=True)
@@ -93,7 +98,8 @@ class Meta(commands.Cog):
 	
 
 	@commands.command(pass_context=True, aliases=['setalias'])
-	async def setmacro(self, ctx, macro, *command, help='Make a shortcut for a commonly used command. Split new commands using "/". Use "{}" to specify an ad lib to be filled in when the macro is used. Example: $setmacro pingandsay $ping / $say {}'):
+	async def setmacro(self, ctx, macro, *command):
+		"""Make a shortcut for a commonly used command. Split new commands using "/". Use "{}" to specify an ad lib to be filled in when the macro is used. Example: $setmacro pingandsay $ping / $say {}"""
 		who = str(ctx.message.author)
 		found = False
 		new_cmd = " ".join(command[:])
@@ -119,7 +125,8 @@ class Meta(commands.Cog):
 		await ctx.send(macro + " saved.")
 		
 	@commands.command(pass_context=True, aliases=['alias'])
-	async def macro(self, ctx, macro, *adlibs, help='Use a shortcut you set with $setmacro. If you gave your macro ad libs, put them after.'):
+	async def macro(self, ctx, macro, *adlibs):
+		"""Use a shortcut you set with $setmacro. If you gave your macro ad libs, put them after."""
 		who = str(ctx.message.author)
 		args = list(adlibs)
 		for user in self.macros:
@@ -143,7 +150,8 @@ class Meta(commands.Cog):
 		await ctx.message.add_reaction(db.NOT_OK)
 		
 	@commands.command(pass_context=True, aliases=['aliases', 'macros', 'myaliases'])
-	async def mymacros(self, ctx, macro=None, help='See the macros you set, or try $mymacros macro-name to see the details of a particular macro.'):
+	async def mymacros(self, ctx, macro=None):
+		"""See the macros you set, or try $mymacros macro-name to see the details of a particular macro."""
 		who = str(ctx.message.author)
 		ret = "```\n{0}\n```"
 		macros = []
@@ -168,29 +176,34 @@ class Meta(commands.Cog):
 			
 			
 	@commands.command(pass_context=True)
-	async def say(self, ctx, *msg, help='Say something as your character. For use with macros.'):
+	async def say(self, ctx, *msg):
+		"""Say something as your character. For use with macros."""
 		who = str(ctx.message.author)
 		character = get_character_name(who)
 		await ctx.send("**{0}**: {1}".format(character, " ".join(msg)))
 	
 	@commands.command(pass_context=True, aliases=['me'])
-	async def emote(self, ctx, *msg, help='Do something as your character. For use with macros.'):
+	async def emote(self, ctx, *msg):
+		"""Do something as your character. For use with macros."""
 		who = str(ctx.message.author)
 		character = get_character_name(who)
 		await ctx.send("*{0} {1}*".format(character, " ".join(msg)))
 
 	@commands.command(pass_context=True)
-	async def uptime(self, ctx, help = "Get bot's lifespan"):
+	async def uptime(self, ctx):
+		"""Get bot's lifespan"""
 		await ctx.send("I've been up for " + str(datetime.timedelta(seconds = (time.time() - START_TIME))))
 		
 	@commands.command(pass_context=True)
-	async def cost(self, ctx, *ability, help = "Get an ability's cost."):
+	async def cost(self, ctx, *ability):
+		"""Get an ability's cost."""
 		name = " ".join(ability[:])
 		ability = abilityClass.get_ability(name)
-		await ctx.send(str(ability.cost))
+		await ctx.send(str(ability.readable_cost))
 
 	@commands.command(pass_context=True)
-	async def whatis(self, ctx, *ability, help="Get an ability's info."):
+	async def whatis(self, ctx, *ability):
+		"""Get an ability's info."""
 		matches, URL = webscraper.find_ability(*ability)
 		if len(matches) == 1:
 			contents = webscraper.get_ability_contents(matches[0], URL)

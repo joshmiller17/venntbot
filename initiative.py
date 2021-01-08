@@ -43,6 +43,8 @@ async def list_enemies_internal(ctx):
 		await ctx.send("No enemies")
 
 class Initiative(commands.Cog):
+	"""Commands for turn order."""
+
 	def __init__(self, bot):
 		self.bot = bot
 		self.turns = {} # who : value + 0.01 * score + 0.001* rand float for tie breaking
@@ -56,7 +58,8 @@ class Initiative(commands.Cog):
 		await self.next_turn(ctx)
 		
 	@commands.command(pass_context=True, aliases=['next', 'end'])
-	async def next_turn(self, ctx, help = "Advance the turn order."):
+	async def next_turn(self, ctx):
+		"""Advance the turn order."""
 		if self.turns == {}:
 			await ctx.message.add_reaction(db.NOT_OK)
 			await ctx.send("Not in combat.")
@@ -85,6 +88,7 @@ class Initiative(commands.Cog):
 		
 	@commands.command(pass_context=True)
 	async def list_enemies(self, ctx):
+		"""List enemies in battle."""
 		await list_enemies_internal(ctx)
 		
 	@commands.command(pass_context=True)
@@ -93,7 +97,8 @@ class Initiative(commands.Cog):
 		await self.next_turn(ctx)
 		
 	@commands.command(pass_context=True)
-	async def add_enemies(self, ctx, num, name, help="Add X enemies to active combat."):
+	async def add_enemies(self, ctx, num, name):
+		"""Add X enemies to active combat."""
 		num = int(num)
 		new_enemies = enemyhandler.make_enemies(num, name)
 		for e in new_enemies:
@@ -102,14 +107,16 @@ class Initiative(commands.Cog):
 		await add_turn_internal(self, ctx, "[ENEMY] " + str(num) + "x " + name, name, stats.do_check(new_enemies[0], "INIT"))
 		await self.turn_order(ctx)
 
-	@commands.command(pass_context=True)
-	async def clear_fight(self, ctx, help="End combat."):
+	@commands.command(pass_context=True, aliases=['end_combat'])
+	async def clear_fight(self, ctx):
+		"""End combat."""
 		db.ENEMIES = []
 		self.turns = {}
 		await ctx.message.add_reaction(db.OK)	
 		
 	@commands.command(pass_context=True)
-	async def turn_order(self, ctx, help = "Get the turn order."):
+	async def turn_order(self, ctx):
+		"""Get the turn order."""
 		ret = "Turn order: "
 		turns = []
 		sorted_turns = sorted(self.turns.items(), key=operator.itemgetter(1),reverse=True)
@@ -119,7 +126,8 @@ class Initiative(commands.Cog):
 		await ctx.send(ret)
 
 	@commands.command(pass_context=True)
-	async def new_init(self, ctx, go="", help = "Rolls a new initiative for everyone."):
+	async def new_init(self, ctx, go=""):
+		"""Rolls a new initiative for everyone."""
 		await ctx.message.add_reaction(db.THINKING)
 		await self.clear_fight(ctx)
 		for player in db.get_player_names():
@@ -130,5 +138,6 @@ class Initiative(commands.Cog):
 			await self.next_turn(ctx)
 
 	@commands.command(pass_context=True)
-	async def add_turn(self, ctx, who, result, help= "Usage: $add_turn character roll_result"):
+	async def add_turn(self, ctx, who, result):
+		"""Add a pre-rolled result to the turn order."""
 		await add_turn_internal(self, ctx, who, who, result)

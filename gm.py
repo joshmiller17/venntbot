@@ -18,12 +18,15 @@ logClass = importlib.import_module("logger")
 logger = logClass.Logger("gm")
 
 class GM(commands.Cog):
+	"""Commands for the GM."""
+
 	def __init__(self, bot):
 		self.bot = bot
 		self.initCog = self.bot.get_cog('Initiative')
 		
 	@commands.command(pass_context=True)
-	async def gm_attack(self, ctx, who, target, weapon, acc_mod="+0", dmg_mod="+0", help="Roll someone's attack with a weapon. For GM use only."):
+	async def gm_attack(self, ctx, who, target, weapon, acc_mod="+0", dmg_mod="+0"):
+		"""Roll someone's attack with a weapon. For GM use only."""
 		target_ent = db.find(target)
 		if target_ent is None:
 			await ctx.send("No target named " + target + ", try:")
@@ -85,7 +88,8 @@ class GM(commands.Cog):
 	
 
 	@commands.command(pass_context=True)
-	async def gm_set_primary_weapon(self, ctx, who, weapon, help="Set someone's primary weapon type. For GM use only."):
+	async def gm_set_primary_weapon(self, ctx, who, weapon):
+		"""Set someone's primary weapon type. For GM use only."""
 		entity = db.find(who)
 		entity["primary_weapon"] = weapon
 		db.save_characters()
@@ -118,9 +122,16 @@ class GM(commands.Cog):
 				spent.append("{0} spent {1} Vim".format(entity.display_name(), val))
 		if spent != []:
 			await ctx.send("\n".join(spent))
+			
+	@commands.command(pass_context=True)
+	async def gm_skills(self, ctx, who):
+		"""List someone's skills."""
+		entity = db.find(who)
+		await ctx.send(", ".join(entity.skills))
 		
 	@commands.command(pass_context=True)
-	async def gm_use(self, ctx, who, *ability, help="Use someone's ability. For GM use only."):
+	async def gm_use(self, ctx, who, *ability):
+		"""Use someone's ability. For GM use only."""
 		abiObj = abilityClass.get_ability(" ".join(ability[:]))
 		user = db.find(who)
 		if not user.can_afford(abiObj.cost):
@@ -136,7 +147,8 @@ class GM(commands.Cog):
 		# TODO more feedback
 		
 	@commands.command(pass_context=True)
-	async def gm_cast(self, ctx, who, strength="normal", *spell, help="Cast someone's spell. For GM use only."):
+	async def gm_cast(self, ctx, who, strength="normal", *spell):
+		"""Cast someone's spell. For GM use only."""
 		spell = " ".join(spell[:])
 		abiObj = abilityClass.get_ability(spell)
 		user = db.find(who)

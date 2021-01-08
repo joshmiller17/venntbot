@@ -32,6 +32,8 @@ def get_enemy(name):
 			return ent
 
 class EnemyHandler(commands.Cog):
+	"""Commands to control enemies."""
+
 	def __init__(self, bot):
 		self.bot = bot
 		

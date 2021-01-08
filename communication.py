@@ -155,6 +155,9 @@ async def ask_cast_strength(self, ctx):
 	db.QUICK_ACTION_MESSAGE = m
 
 class Communication(commands.Cog):
+	"""Interface with the bot."""
+
+
 	def __init__(self, bot):
 		self.bot = bot
 		self.enemy_list_offset = 0
@@ -170,7 +173,8 @@ class Communication(commands.Cog):
 				await self.remove_bot_reactions(message) # refresh list and try again
 				
 	@commands.command(pass_context=True)
-	async def quick(self, ctx, help="Show available quick actions."):
+	async def quick(self, ctx):
+		"""Show available quick actions."""
 		await suggest_quick_actions(ctx, db.find(self.initCog.whose_turn))
 	
 	@commands.Cog.listener()

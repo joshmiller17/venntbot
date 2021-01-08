@@ -66,19 +66,24 @@ async def handle_round_effects(ctx):
 
 
 class Combat(commands.Cog):
+	"""Commands to use in battle."""
+
+
 	def __init__(self, bot):
 		self.bot = bot
 		self.gm = self.bot.get_cog('GM')
 
 	@commands.command(pass_context=True, aliases=['oops'])
-	async def undo(self, ctx, help = "Undo an attack or ability."):
+	async def undo(self, ctx):
+		"""Undo an attack or ability."""
 		logger.log("undo", "called")
 		for role, entity in LAST_ACTION.entities.items():
 			await ctx.send("Undoing effects for " + entity.name)
 			await entity.add_resources_verbose(ctx, LAST_ACTION.effects[role])
 			
 	@commands.command(pass_context=True)
-	async def howis(self, ctx, who, help="Get someone's full status. Can use 'party', 'enemies', or 'everyone'."):
+	async def howis(self, ctx, who):
+		"""Get someone's full status. Can use 'party', 'enemies', or 'everyone'."""
 		list = []
 		if who == 'party' or who == 'everyone':
 			list += db.get_player_names()
@@ -95,7 +100,8 @@ class Combat(commands.Cog):
 
 
 	@commands.command(pass_context=True)
-	async def add_effect(self, ctx, who, description, stat, val, stacks="", help="Add a status or modifier. Can use 'party' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+	async def add_effect(self, ctx, who, description, stat, val, stacks=""):
+		"""Add a status or modifier. Can use 'party' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
 		logger.log("add_effect", who)
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
@@ -114,7 +120,8 @@ class Combat(commands.Cog):
 			await ctx.message.add_reaction(db.OK)
 			
 	@commands.command(pass_context=True)
-	async def modify_effect(self, ctx, who, description, stat, val, help="Modify an existing status. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+	async def modify_effect(self, ctx, who, description, stat, val):
+		"""Modify an existing status. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
@@ -130,7 +137,8 @@ class Combat(commands.Cog):
 			await ctx.message.add_reaction(db.OK)
 	
 	@commands.command(pass_context=True)
-	async def remove_effect(self, ctx, who, description, help="Remove a status or modifier. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."):
+	async def remove_effect(self, ctx, who, description):
+		"""Remove a status or modifier. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
@@ -147,7 +155,8 @@ class Combat(commands.Cog):
 			await ctx.message.add_reaction(db.OK)
 	
 	@commands.command(pass_context=True)
-	async def define_weapon(self, ctx, name, attr, dmg, *special, help="Define a new weapon. For special damage, add at the end, e.g. '1d6 burning'"):		
+	async def define_weapon(self, ctx, name, attr, dmg, *special):		
+		"""Define a new weapon. For special damage, add at the end, e.g. '1d6 burning'"""
 		new_weapon = {}
 		new_weapon["name"] = name.lower()
 		new_weapon["attr"] = attr.upper()
@@ -180,35 +189,47 @@ class Combat(commands.Cog):
 		db.save_weapons()
 		
 	@commands.command(pass_context=True)
-	async def set_primary_weapon(self, ctx, weapon, help="Set your primary weapon type for the weapon you use most often. If your weapon is special, see $define_weapon."):
+	async def set_primary_weapon(self, ctx, weapon):
+		"""Set your primary weapon type for the weapon you use most often. If your weapon is special, see $define_weapon."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm.gm_set_primary_weapon(ctx, who, weapon)
 		
 	@commands.command(pass_context=True)
-	async def attack(self, ctx, target, weapon, acc_mod="+0", dmg_mod="+0", help='Roll an attack with a weapon, optionally add Acc and Dmg modifiers.'):
+	async def attack(self, ctx, target, weapon, acc_mod="+0", dmg_mod="+0"):
+		"""Roll an attack with a weapon, optionally add Acc and Dmg modifiers."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm.gm_attack(ctx, who, target, weapon, acc_mod, dmg_mod)	
 	
 	@commands.command(pass_context=True)
-	async def use(self, ctx, *ability, help='Use an ability.'): # TODO allow the use of items
+	async def use(self, ctx, *ability): # TODO allow the use of items
+		"""Use an ability."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm.gm_use(ctx, who, " ".join(ability[:]))
 		
 	@commands.command(pass_context=True, aliases=['ncast', 'normalcast', 'normal_cast'])
-	async def cast(self, ctx, *spell, help='Cast a spell.'):
+	async def cast(self, ctx, *spell):
+		"""Cast a spell."""
 		who = meta.get_character_name(ctx.message.author)
 		spell = " ".join(spell[:])
 		await self.gm.gm_cast(ctx, who, 1, spell)
 		
 	@commands.command(pass_context=True, aliases=['hcast', 'halfcast'])
-	async def half_cast(self, ctx, *spell, help='Half-cast a spell.'):
+	async def half_cast(self, ctx, *spell):
+		"""Half-cast a spell."""
 		who = meta.get_character_name(ctx.message.author)
 		spell = " ".join(spell[:])
 		await self.gm.gm_cast(ctx, who, 0, spell)
 		
 	@commands.command(pass_context=True, aliases=['dcast', 'doublecast'])
-	async def double_cast(self, ctx, *spell, help='Double-cast a spell.'):
+	async def double_cast(self, ctx, *spell):
+		"""Double-cast a spell."""
 		who = meta.get_character_name(ctx.message.author)
 		spell = " ".join(spell[:])
 		await self.gm.gm_cast(ctx, who, 2, spell)
+		
+	@commands.command(pass_context=True, aliases=['abilities'])
+	async def skills(self, ctx):
+		"""List your skills."""
+		who = meta.get_character_name(ctx.message.author)
+		await self.gm.gm_skills(ctx, who)
 		

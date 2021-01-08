@@ -34,6 +34,8 @@ def make_ability(name):
 	eff = ""
 	exp_for = None
 	m_cost = None
+	build_dc = None
+	build_t = None
 	cast_dl = None
 	unlock = None
 	ability_range = None
@@ -52,6 +54,10 @@ def make_ability(name):
 			m_cost = parse_mp_costs(line)
 		elif line.startswith("Casting DL:"):
 			cast_dl = parse_casting_dl(line)
+		elif line.startswith("DC:"):
+			build_dc = parse_dc(line)
+		elif line.startswith("Build time:"):
+			build_t = parse_build_time(line)
 		elif line.startswith("Activation:"):
 			act_cost = parse_activation_cost(line)
 			read_cost = line[12:-1]
@@ -63,10 +69,15 @@ def make_ability(name):
 			
 		parsed_name = True
 			
-	ret =  Ability(name, contents, purchase_cost=pur_cost, activation_cost=act_cost, readable_cost=read_cost, effect=eff, unlocks=unlock, prerequisites=prereq, expedited_for=exp_for, mp_costs=m_cost, casting_dl=cast_dl, range=ability_range)
+	ret = Ability(name, contents, purchase_cost=pur_cost, activation_cost=act_cost, readable_cost=read_cost, effect=eff, unlocks=unlock, prerequisites=prereq, expedited_for=exp_for, mp_costs=m_cost, casting_dl=cast_dl, range=ability_range, dc = build_dc, build_time = build_t)
 	logger.log("make_ability", str(ret))
 	return ret
-	
+
+def parse_dc(line):
+	return line[4:-1] # just get string for now	
+
+def parse_build_time(line):
+	return line[12:-1] # just get string for now	
 
 def parse_purchase_cost(line):
 	return line[6:-1] # just get string for now
@@ -98,11 +109,11 @@ def parse_activation_cost(line):
 	cost = {}
 	matches = re.findall("Activation: ((?:Passive)|(\d Actions?)|(Attack)|(?:, )|(\d*\**X? Actions?)|(\d*\**X? Reactions?)|(\d*\**X? Vim)|(\d*\**X? MP))*", line)
 	for match_tuple in matches:
-		logger.log("parse_activation_cost", "tuple: " + str(match_tuple))
+		#logger.log("parse_activation_cost", "tuple: " + str(match_tuple))
 		for match in match_tuple:
 			if match == "" or match == ", ":
 				continue
-			if match == "Attack":
+			if "Attack" in match: # currently ignoring the distinction of "Ranged Attack" or "Melee Attack"
 				cost["Attack"] = True
 				continue
 			if match == "Passive":
@@ -110,6 +121,7 @@ def parse_activation_cost(line):
 				continue
 			if "Activation" not in match: # skip "capture all" group
 				match = match.replace("Hero Point", "Point")
+				print(match) # TODO remove
 				cost_str = match.split(' ')
 				type = cost_str[1][0] # first char of word
 				amt = cost_str[0]
@@ -124,7 +136,7 @@ def parse_range(line):
 
 
 class Ability():
-	def __init__(self, name, contents, purchase_cost, activation_cost, readable_cost, effect, unlocks=None, prerequisites=None, expedited_for = None, mp_costs = None, casting_dl = None, range = None):
+	def __init__(self, name, contents, purchase_cost, activation_cost, readable_cost, effect, unlocks=None, prerequisites=None, expedited_for = None, mp_costs = None, casting_dl = None, range = None, dc = None, build_time = None):
 		self.name = name
 		self.contents = contents
 		self.purchase_cost = purchase_cost
@@ -138,6 +150,9 @@ class Ability():
 		self.casting_dl = casting_dl
 		self.range = range
 		self.effect = effect
+		self.dc = dc
+		self.build_time = build_time
+		self.is_tinker = (dc != None) or (build_time != None)
 	
 	def is_valid(self):
 		if not self.name or not self.contents or self.cost is None:
@@ -154,12 +169,16 @@ class Ability():
 	
 	def __str__(self):
 		ret = "[" + self.name + "]\n"
-		ret += "-- Cost: " + str(self.purchase_cost) + "\n"
-		ret += "-- Expedited for: " + str(self.expedited) + "\n"
+		#ret += "-- Cost: " + str(self.purchase_cost) + "\n"
+		#ret += "-- Expedited for: " + str(self.expedited) + "\n"
+		ret += "-- Activation: " + self.readable_cost + " -> " + str(self.cost) + "\n"
 		if self.is_spell:
 			ret += "-- MP Cost: " + str(self.mp_costs) + "\n"
 			ret += "-- Casting DL: " + str(self.casting_dl) + "\n"
+		if self.is_tinker:
+			ret += "-- DC: " + str(self.dc) + "\n"
+			ret += "-- Build Time: " + str(self.build_time) + "\n"
 		if self.range is not None:
 			ret += "-- Range: " + str(self.range) + "\n"
-		ret += "-- Effect: " + self.effect + "\n"
+		#ret += "-- Effect: " + self.effect + "\n"
 		return ret

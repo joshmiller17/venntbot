@@ -1,6 +1,7 @@
 # --- Josh Aaron Miller 2021
 # --- main run for Discord Vennt Bot
 import discord, os, sys, traceback, json, time, re
+from pretty_help import PrettyHelp
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -23,7 +24,7 @@ logger = logClass.Logger("venntbot")
 # Discord setup
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-client = commands.Bot(command_prefix="$")
+client = commands.Bot(command_prefix="$", help_command=PrettyHelp())
 
 
 async def parse(message):
@@ -133,6 +134,7 @@ async def on_message(message):
 		if (message.content == "test"):
 			await do_tests(message)
 			
+client.description = "A bot to assist with running the Vennt RPG."
 client.add_cog(meta.Meta(client))
 client.add_cog(sheets.Sheets(client))
 client.add_cog(stats.Stats(client))

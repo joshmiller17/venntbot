@@ -96,4 +96,4 @@ if __name__ == "__main__":
 			
 		#sleep to be polite to the server
 		time.sleep(1)
-	out.write(json.dumps(all_entries,ensure_ascii=False)+"\n")
+	out.write(json.dumps(all_entries,ensure_ascii=False, indent=4)+"\n")

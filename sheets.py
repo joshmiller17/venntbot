@@ -58,7 +58,7 @@ def get_sheet_id(char_name):
 	for character in db.characters:
 		if character["name"] == char_name:
 			return character["ID"]
-	print("ERROR: no sheet found for " + char_name)
+	logger.err("get_sheet_id", "no sheet found for " + char_name)
 	return ""
 
 def get_from_sheets(spreadsheet_id, sheet_range):
@@ -74,7 +74,7 @@ def update_to_sheets(spreadsheet_id, sheet_range, vs):
 	valueInputOption='RAW', body=body).execute()
 	
 async def set_stat(ctx, who, amount, stat): # internal call of set command
-	print("Set stat " + who + " " + str(amount) + " " + stat)
+	logger.log("set_stat", "Set stat " + who + " " + str(amount) + " " + stat)
 	stat = stat.upper()
 	if stat not in STATS.keys():
 		await ctx.send("Unknown stat: " + stat)
@@ -95,16 +95,19 @@ async def do_get(ctx, who, stat):
 	
 async def do_get_abilities(ctx, who):
 	skills = get_from_sheets(get_sheet_id(who), "Skills!A7:A1000")
-	skills = [s[0] for s in skills] # de-listify
+	skills = [s[0] for s in skills if len(s) > 0] # de-listify
 	return skills
 
 
 class Sheets(commands.Cog):
+	"""Commands to modify character sheets."""
+
 	def __init__(self, bot):
 		self.bot = bot
 
 	@commands.command(pass_context=True)
-	async def set_sheet(self, ctx, who, amount, stat, help="Set a stat on a character sheet. Players can only use 'me' or their name."):
+	async def set_sheet(self, ctx, who, amount, stat):
+		"""Set a stat on a character sheet. Players can only use 'me' or their name."""
 		char_name = meta.get_character_name(ctx.message.author)
 		if char_name != "GM" and who != "me" and who != char_name:
 			await ctx.message.add_reaction(db.NOT_OK)
@@ -113,7 +116,8 @@ class Sheets(commands.Cog):
 		await set_stat(ctx, who, amount, stat)
 		
 	@commands.command(pass_context=True)
-	async def modify_sheet(self, ctx, who, amount, stat, help="Modify a stat on a character sheet."):
+	async def modify_sheet(self, ctx, who, amount, stat):
+		"""Modify a stat on a character sheet."""
 		char_name = meta.get_character_name(ctx.message.author)
 		if char_name != "GM" and who != "me" and who != char_name:
 			ctx.message.add_reaction(db.NOT_OK)
@@ -123,12 +127,14 @@ class Sheets(commands.Cog):
 		await set_stat(ctx, who, amount, stat)
 
 	@commands.command(pass_context=True)
-	async def read_sheet(self, ctx, who, stat, help="See a stat on a character sheet."):
+	async def read_sheet(self, ctx, who, stat):
+		"""See a stat on a character sheet."""
 		ctx.send( await do_get(ctx, who, stat) )
 
 	# Save characters.json -> Google Sheet
 	@commands.command(pass_context=True)
-	async def save(self, ctx, player, help="Save changes to character sheet, or 'all' for everyone."):
+	async def save(self, ctx, player):
+		"""Save changes to character sheet, or 'all' for everyone."""
 		if player == 'all':
 			for p in db.get_player_names():
 				await self.save(ctx, p)
@@ -141,11 +147,12 @@ class Sheets(commands.Cog):
 	
 	# Load Google Sheet -> db -> characters.json
 	@commands.command(pass_context=True)
-	async def load(self, ctx, who, help="Load a character sheet, or 'all' for everyone (takes several minutes)."):
+	async def load(self, ctx, who):
+		"""Load a character sheet, or 'all' for everyone (takes several minutes)."""
 		await ctx.message.add_reaction(db.THINKING)
 		if who == 'all':
 			for p in db.get_player_names():
-				print("Loading " + p)
+				logger.log("load", "Loading " + p)
 				await self.load(ctx, p)
 				time.sleep(60) # need to be extra nice to the server, this makes a lot of calls
 		else:

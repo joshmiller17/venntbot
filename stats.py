@@ -64,15 +64,19 @@ async def do_examine(ctx, target_ent):
 	
 
 class Stats(commands.Cog):
+	"""Basic rolls, checks, and using resources."""
+
 	def __init__(self, bot):
 		self.bot = bot	
 		
 	@commands.command(pass_context=True)
 	async def half(self, ctx, num):
+		"""Get half of a number."""
 		await ctx.send("```{0} / 2 = **{1}**```".format(num, half(num)))
 		
 	@commands.command(pass_context=True)
-	async def gm_check(self, ctx, who, stat, help = "Roll a check for someone."):
+	async def gm_check(self, ctx, who, stat):
+		"""Roll a check for someone."""
 		attr_val = db.find(who).get_stat(stat)
 		d1 = d6()
 		d2 = d6()
@@ -82,12 +86,14 @@ class Stats(commands.Cog):
 		"** ({0},{1},{2} + {3})".format(d1,d2,d3,attr_val))
 
 	@commands.command(pass_context=True)
-	async def check(self, ctx, stat, help = "Roll a check for your character."):
+	async def check(self, ctx, stat):
+		"""Roll a check for your character."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm_check(ctx, who, stat)
 
 	@commands.command(pass_context=True)
-	async def gm_set(self, ctx, who, stat, value, help="Set a stat."):
+	async def gm_set(self, ctx, who, stat, value):
+		"""Set a stat."""
 		value = clean_modifier(value)
 		entity = db.find(who)
 		if stat.lower() == "action":
@@ -100,7 +106,8 @@ class Stats(commands.Cog):
 			entity.attrs[stat] = value
 		
 	@commands.command(pass_context=True)
-	async def gm_modify(self, ctx, who, value, stat, help="Modify a stat."):
+	async def gm_modify(self, ctx, who, value, stat):
+		"""Modify a stat."""
 		value = clean_modifier(value)
 		entity = db.find(who)
 		if stat.lower() == "action":
@@ -114,37 +121,44 @@ class Stats(commands.Cog):
 		await ctx.message.add_reaction(db.OK)
 	
 	@commands.command(pass_context=True)
-	async def set(self, ctx, stat, value, help="Set your stat."):
+	async def set(self, ctx, stat, value):
+		"""Set your stat."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm_set(ctx, who, stat, value)
 		
 	@commands.command(pass_context=True)
-	async def gm_spend(self, ctx, who, value, stat, help="Spend someone's stat. For GM use only."):
+	async def gm_spend(self, ctx, who, value, stat):
+		"""Spend someone's stat. For GM use only."""
 		value = clean_modifier(value)
 		await self.gm_modify(ctx, who, -1 * value, stat)
 	
 	@commands.command(pass_context=True)
-	async def spend(self, ctx, value, stat, help="Spend a stat (negative value assumed)."):
+	async def spend(self, ctx, value, stat):
+		"""Spend a stat (negative value assumed)."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm_modify(ctx, who, -1 * value, stat)
 		
 	@commands.command(pass_context=True)
-	async def modify(self, ctx, value, stat, help="Modify your stat (positive value assumed)."):
+	async def modify(self, ctx, value, stat):
+		"""Modify your stat (positive value assumed)."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm_modify(ctx, who, value, stat)
 
 	@commands.command(pass_context=True)
-	async def attr(self, ctx, who, which, help="Get someone's attributes. Usage: $who name attribute"):
+	async def attr(self, ctx, who, which):
+		"""Get someone's attributes."""
 		await ctx.send(who + "'s " + which + " is " + db.find(who).get_stat(which))
 
 
 	@commands.command(pass_context=True)
-	async def roll(self, ctx, *roll, help = "Basic dice rolling parser. For flow, roll 4d6kh3 (roll 4, keep highest 3). Comments can go in brackets."):
+	async def roll(self, ctx, *roll):
+		"""Basic dice rolling parser. For flow, roll 4d6kh3 (roll 4, keep highest 3). Comments can go in brackets."""
 		await do_roll(ctx, *roll)
 
 
 	@commands.command(pass_context=True)
-	async def examine(self, ctx, target, help = "Check how healthy someone is, or 'all' to check everyone."):
+	async def examine(self, ctx, target):
+		"""Check how healthy someone is, or 'all' to check everyone."""
 		if target == 'all':
 			for e in entities:
 				await do_examine(ctx, e)

@@ -97,7 +97,6 @@ def get_player_names():
 	return [character["name"] for character in characters if character["name"] != "GM"]
 	
 def save_characters():
-	print(characters) # TODO remove
 	with open("characters.json", 'w') as f:
 		json.dump(characters, f, indent=4)
 		
