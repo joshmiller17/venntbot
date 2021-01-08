@@ -83,8 +83,10 @@ class Combat(commands.Cog):
 			
 	@commands.command(pass_context=True)
 	async def howis(self, ctx, who):
-		"""Get someone's full status. Can use 'party', 'enemies', or 'everyone'."""
+		"""Get someone's full status. Can use 'me', 'party', 'enemies', or 'everyone'."""
 		list = []
+		if who == 'me':
+			who = meta.get_character_name(ctx.message.author)
 		if who == 'party' or who == 'everyone':
 			list += db.get_player_names()
 		if who == 'enemies' or who == 'everyone':
@@ -103,6 +105,8 @@ class Combat(commands.Cog):
 	async def add_effect(self, ctx, who, description, stat, val, stacks=""):
 		"""Add a status or modifier. Can use 'party' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
 		logger.log("add_effect", who)
+		if who == 'me':
+			who = meta.get_character_name(ctx.message.author)
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
@@ -122,6 +126,8 @@ class Combat(commands.Cog):
 	@commands.command(pass_context=True)
 	async def modify_effect(self, ctx, who, description, stat, val):
 		"""Modify an existing status. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
+		if who == 'me':
+			who = meta.get_character_name(ctx.message.author)
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
@@ -139,6 +145,8 @@ class Combat(commands.Cog):
 	@commands.command(pass_context=True)
 	async def remove_effect(self, ctx, who, description):
 		"""Remove a status or modifier. Can use 'all' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
+		if who == 'me':
+			who = meta.get_character_name(ctx.message.author)
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():

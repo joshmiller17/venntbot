@@ -68,6 +68,7 @@ def get_from_sheets(spreadsheet_id, sheet_range):
 	return values
 	
 def update_to_sheets(spreadsheet_id, sheet_range, vs):
+	logger.log("update_to_sheets", "updating {0} in {1} with {2}".format(sheet_range, spreadsheet_id, vs))
 	body = {'values' : vs}
 	result = service.spreadsheets().values().update(
 	spreadsheetId=spreadsheet_id, range=sheet_range,
@@ -112,7 +113,7 @@ class Sheets(commands.Cog):
 		if char_name != "GM" and who != "me" and who != char_name:
 			await ctx.message.add_reaction(db.NOT_OK)
 			return
-		stat = int(stat)
+		amount = [[int(amount)]]
 		await set_stat(ctx, who, amount, stat)
 		
 	@commands.command(pass_context=True)
@@ -129,7 +130,7 @@ class Sheets(commands.Cog):
 	@commands.command(pass_context=True)
 	async def read_sheet(self, ctx, who, stat):
 		"""See a stat on a character sheet."""
-		ctx.send( await do_get(ctx, who, stat) )
+		await ctx.send( await do_get(ctx, who, stat) )
 
 	# Save characters.json -> Google Sheet
 	@commands.command(pass_context=True)
