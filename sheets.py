@@ -13,6 +13,7 @@ import importlib
 db = importlib.import_module("db")
 stats = importlib.import_module("stats")
 meta = importlib.import_module("meta")
+communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("sheets")
 
@@ -78,7 +79,7 @@ async def set_stat(ctx, who, amount, stat): # internal call of set command
 	logger.log("set_stat", "Set stat " + who + " " + str(amount) + " " + stat)
 	stat = stat.upper()
 	if stat not in STATS.keys():
-		await ctx.send("Unknown stat: " + stat)
+		await communication.send(ctx,"Unknown stat: " + stat)
 		return
 	cell = "Stats!" + STATS[stat]
 	update_to_sheets(get_sheet_id(who), cell, amount)
@@ -86,7 +87,7 @@ async def set_stat(ctx, who, amount, stat): # internal call of set command
 	
 async def do_get(ctx, who, stat):
 	if stat not in STATS.keys() and stat not in READ_ONLY_STATS.keys():
-		await ctx.send("Unknown stat: " + stat)
+		await communication.send(ctx,"Unknown stat: " + stat)
 		return
 	if stat in STATS.keys():
 		cell = "Stats!" + STATS[stat]
@@ -98,6 +99,11 @@ async def do_get_abilities(ctx, who):
 	skills = get_from_sheets(get_sheet_id(who), "Skills!A7:A1000")
 	skills = [s[0] for s in skills if len(s) > 0] # de-listify
 	return skills
+	
+async def do_get_inventory(ctx, who):
+	i_sheet = get_from_sheets(get_sheet_id(who), "Inventory!A1:D1000")
+	inventory = [i for i in i_sheet if len(i) > 1 and i[2] != ""] # de-listify
+	return inventory
 
 
 class Sheets(commands.Cog):
@@ -116,7 +122,7 @@ class Sheets(commands.Cog):
 		amount = [[int(amount)]]
 		await set_stat(ctx, who, amount, stat)
 		
-	@commands.command(pass_context=True)
+	@commands.command(pass_context=True, aliases=['mod_sheet'])
 	async def modify_sheet(self, ctx, who, amount, stat):
 		"""Modify a stat on a character sheet."""
 		char_name = meta.get_character_name(ctx.message.author)
@@ -127,10 +133,10 @@ class Sheets(commands.Cog):
 		amount = amount + await get(self, ctx, who, stat)
 		await set_stat(ctx, who, amount, stat)
 
-	@commands.command(pass_context=True)
+	@commands.command(pass_context=True, aliases=['get_sheet'])
 	async def read_sheet(self, ctx, who, stat):
 		"""See a stat on a character sheet."""
-		await ctx.send( await do_get(ctx, who, stat) )
+		await communication.send(ctx, await do_get(ctx, who, stat) )
 
 	# Save characters.json -> Google Sheet
 	@commands.command(pass_context=True)
@@ -158,13 +164,23 @@ class Sheets(commands.Cog):
 				time.sleep(60) # need to be extra nice to the server, this makes a lot of calls
 		else:
 			e = db.find(who)
+			
+			# STATS
 			for stat in STATS.keys():
 				e.attrs[stat] = await do_get(ctx, who, stat)
 				time.sleep(1)
+				
+			# READ ONLY STATS
 			for stat in READ_ONLY_STATS.keys():
 				e.attrs[stat] = await do_get(ctx, who, stat)
 				time.sleep(1)
+				
+			# SKILLS
 			e.skills = await do_get_abilities(ctx, who)
+			
+			# INVENTORY
+			e.inventory = await do_get_inventory(ctx, who)
+			
 			e.write() # write db -> characters.json
 		await ctx.message.add_reaction(db.OK)
 		await ctx.message.remove_reaction(db.THINKING, ctx.me)

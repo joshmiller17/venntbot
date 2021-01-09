@@ -8,6 +8,7 @@ import random, d20, math
 import importlib
 db = importlib.import_module("db")
 meta = importlib.import_module("meta")
+communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("stats")
 
@@ -55,12 +56,12 @@ async def do_roll(ctx, *args):
 	rollstr = "".join(args[:]) # remove spaces
 	logger.log("do_roll", rollstr)
 	r = d20.roll(rollstr, allow_comments=True)
-	await ctx.send(str(r))
+	await communication.send(ctx,str(r))
 	return r.total
 	
 async def do_examine(ctx, target_ent):
 	status = get_status(target_ent)
-	await ctx.send(target_ent.display_name() + " is looking " + status + "!")
+	await communication.send(ctx,target_ent.display_name() + " is looking " + status + "!")
 	
 
 class Stats(commands.Cog):
@@ -72,17 +73,18 @@ class Stats(commands.Cog):
 	@commands.command(pass_context=True)
 	async def half(self, ctx, num):
 		"""Get half of a number."""
-		await ctx.send("```{0} / 2 = **{1}**```".format(num, half(num)))
+		await communication.send(ctx,"```{0} / 2 = **{1}**```".format(num, half(num)))
 		
 	@commands.command(pass_context=True)
 	async def gm_check(self, ctx, who, stat):
 		"""Roll a check for someone."""
+		stat = stat.upper()
 		attr_val = db.find(who).get_stat(stat)
 		d1 = d6()
 		d2 = d6()
 		d3 = d6()
 		res = d1+d2+d3+attr_val
-		await ctx.send(who + "'s " + stat.upper() + " check: **" + str(res) +
+		await communication.send(ctx,who + "'s " + stat.upper() + " check: **" + str(res) +
 		"** ({0},{1},{2} + {3})".format(d1,d2,d3,attr_val))
 
 	@commands.command(pass_context=True)
@@ -103,6 +105,7 @@ class Stats(commands.Cog):
 		if stat == "actions" or stat == "reactions":
 			setattr(entity, stat, value)
 		else:
+			stat = stat.upper()
 			entity.attrs[stat] = value
 		
 	@commands.command(pass_context=True)
@@ -117,6 +120,7 @@ class Stats(commands.Cog):
 		if stat == "actions" or stat == "reactions":
 			setattr(entity, stat, value + getattr(entity, stat))
 		else:
+			stat = stat.upper()
 			entity.attrs[stat] += value
 		await ctx.message.add_reaction(db.OK)
 	
@@ -147,7 +151,8 @@ class Stats(commands.Cog):
 	@commands.command(pass_context=True)
 	async def attr(self, ctx, who, which):
 		"""Get someone's attributes."""
-		await ctx.send(who + "'s " + which + " is " + db.find(who).get_stat(which))
+		which = which.upper()
+		await communication.send(ctx,who + "'s " + which + " is " + str(db.find(who).get_stat(which)))
 
 
 	@commands.command(pass_context=True)

@@ -14,6 +14,7 @@ playerClass = importlib.import_module("player")
 meta = importlib.import_module("meta")
 abilityClass = importlib.import_module("ability")
 act = importlib.import_module("action")
+communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("combat")
 
@@ -25,15 +26,15 @@ async def apply_attack(ctx, target_ent, dmg):
 	new_val = target_ent.get_stat("HP") - true_dmg
 	target_ent.set_stat("HP", new_val)
 	db.LAST_ACTION.add_effect(act.ActionRole.TARGET, target_ent, {"HP":true_dmg})
-	await ctx.send(target_ent.display_name() + " takes " + str(true_dmg) + " damage!")
+	await communication.send(ctx,target_ent.display_name() + " takes " + str(true_dmg) + " damage!")
 	await stats.do_examine(ctx, target_ent)
 
 async def check_hit(ctx, acc, vim, dmg):
 	if acc < vim:
-		await ctx.send("*A glancing blow...* ({0} < {1})".format(acc,vim))
+		await communication.send(ctx,"*A glancing blow...* ({0} < {1})".format(acc,vim))
 		dmg = stats.half(dmg)
 	else:
-		await ctx.send("*A direct hit!* ({0} > {1})".format(acc,vim))
+		await communication.send(ctx,"*A direct hit!* ({0} > {1})".format(acc,vim))
 	return dmg
 	
 async def handle_round_effects(ctx):
@@ -50,15 +51,14 @@ async def handle_round_effects(ctx):
 		burning = e.mods.get_modifier_by_stat("BURNING")
 		bleeding = e.mods.get_modifier_by_stat("BLEEDING")
 		if burning is not None:
-			await ctx.send(e.display_name() + " burns for " + str(burning.total()) + " damage!")
+			await communication.send(ctx,e.display_name() + " burns for " + str(burning.total()) + " damage!")
 			await e.change_resource_verbose(ctx, "HP", -1 * burning.total())
-			e.mods.remove_modifier_by_stat("BURNING")
-			e.mods.add_modifier("BURNING", "burning", max(burning.total()-3, 0), False)
+			e.mods.add_modifier("BURNING", "burning", -3, False)
 			if burning.total() - 3 <= 0:
 				e.mods.remove_modifier_by_stat("BURNING")
-				await ctx.send(e.display_name() + " stops burning!")
+				await communication.send(ctx,e.display_name() + " stops burning!")
 		if bleeding is not None:
-			await ctx.send(e.display_name() + " bleeds for " + str(bleeding.total()) + " damage!")
+			await communication.send(ctx,e.display_name() + " bleeds for " + str(bleeding.total()) + " damage!")
 			await e.change_resource_verbose(ctx, "HP", -1 * bleeding.total())
 		time.sleep(0.25)
 		
@@ -78,7 +78,7 @@ class Combat(commands.Cog):
 		"""Undo an attack or ability."""
 		logger.log("undo", "called")
 		for role, entity in LAST_ACTION.entities.items():
-			await ctx.send("Undoing effects for " + entity.name)
+			await communication.send(ctx,"Undoing effects for " + entity.name)
 			await entity.add_resources_verbose(ctx, LAST_ACTION.effects[role])
 			
 	@commands.command(pass_context=True)
@@ -98,11 +98,11 @@ class Combat(commands.Cog):
 			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		else:
 			entity = db.find(who)
-			await ctx.send(entity.more())
+			await communication.send(ctx,entity.more())
 
 
 	@commands.command(pass_context=True)
-	async def add_effect(self, ctx, who, description, stat, val, stacks=""):
+	async def add_effect(self, ctx, who, description, stat, val, dontstack=""):
 		"""Add a status or modifier. Can use 'party' for all players or 'enemies' for all enemies. Description is one word, e.g. burning or shield."""
 		logger.log("add_effect", who)
 		if who == 'me':
@@ -110,16 +110,16 @@ class Combat(commands.Cog):
 		if who == 'party':
 			await ctx.message.add_reaction(db.THINKING)
 			for p in db.get_player_names():
-				await self.add_effect(ctx, p, description, stat, val, stacks)
+				await self.add_effect(ctx, p, description, stat, val, dontstack)
 			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		elif who == 'enemies':
 			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 			for e in db.ENEMIES:
-				await self.add_effect(ctx, e.display_name(), description, stat, val, stacks)
+				await self.add_effect(ctx, e.display_name(), description, stat, val, dontstack)
 			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		else:
 			entity = db.find(who)
-			stacks = stacks != ""
+			stacks = dontstack == ""
 			entity.mods.add_modifier(description, stat, stats.clean_modifier(val), stacks)
 			await ctx.message.add_reaction(db.OK)
 			
@@ -158,7 +158,6 @@ class Combat(commands.Cog):
 			await ctx.message.remove_reaction(db.THINKING, ctx.me)
 		else:
 			entity = db.find(who)
-			stacks = stacks != ""
 			entity.mods.remove_modifier_by_name(description)
 			await ctx.message.add_reaction(db.OK)
 	
@@ -173,7 +172,7 @@ class Combat(commands.Cog):
 		if len(mods) > 0:
 			if len(mods) % 2 != 0:
 				await ctx.message.add_reaction(db.NOT_OK)
-				await ctx.send("Bad args: Modifiers come in pairs, e.g. 1d6 burning")
+				await communication.send(ctx,"Bad args: Modifiers come in pairs, e.g. 1d6 burning")
 				return
 			new_weapon["mods"] = {}
 			amt = None
@@ -181,14 +180,14 @@ class Combat(commands.Cog):
 				if amt is None:
 					amt = mods[i]
 				else:
-					new_weapon["mods"][mods[i]] = amt
+					new_weapon["mods"][mods[i].upper()] = amt
 					amt = None
 			
 		await ctx.message.add_reaction(db.OK)
 		overwrite = False
 		for weapon in db.weapons:
 			if weapon["name"] == name:
-				await ctx.send("Overwriting old weapon: " + str(weapon))
+				await communication.send(ctx,"Overwriting old weapon: " + str(weapon))
 				weapon = new_weapon
 				overwrite = True
 				break
@@ -213,6 +212,24 @@ class Combat(commands.Cog):
 		"""Use an ability."""
 		who = meta.get_character_name(ctx.message.author)
 		await self.gm.gm_use(ctx, who, " ".join(ability[:]))
+		
+	@commands.command(pass_context=True)
+	async def heal(self, ctx, who, amount):
+		"""Heal someone."""
+		entity = db.find(who)
+		amount_clean = clean_modifier(amount)
+		bleeding = entity.mods.get_modifier_by_stat("BLEEDING")
+		if bleeding is not None:
+			if bleeding.total() <= amount_clean:
+				entity.mods.remove_modifier_by_stat("BLEEDING")
+				amount_clean -= bleeding.total()
+			else:
+				entity.mods.add_modifier("BLEEDING", "bleeding", -1 * amount_clean)
+				amount_clean = 0
+		max_heal = entity.get_stat("MAX_HP") - entity.get_stat("HP")
+		amount_clean = min(amount_clean, max_heal)
+		await entity.change_resource_verbose(ctx, "HP", amount_clean)
+			
 		
 	@commands.command(pass_context=True, aliases=['ncast', 'normalcast', 'normal_cast'])
 	async def cast(self, ctx, *spell):

@@ -20,13 +20,13 @@ class ModifierList:
 	def __init__(self):
 		self.mods = {} # stat : Modifier
 		
-	def add_modifier(self, name, stat, val, stacks=False):
+	def add_modifier(self, name, stat, val, stacks=True):
 		stat = stat.upper()
 		name = name.lower()
 		
 		stacks = stacks or stat in ALWAYS_STACKS
 		
-		logger.log("add_modifier". name + " " + stat + " " + str(val) + " " + str(stacks))
+		logger.log("add_modifier", name + " " + stat + " " + str(val) + " " + str(stacks))
 		
 		if not stacks:
 			if not stat in self.mods or self.mods[stat].total() <= val:
@@ -47,7 +47,7 @@ class ModifierList:
 	# Returns value
 	def get_modifier_by_name(self, name):
 		name = name.lower()
-		for m in self.mods:
+		for stat, m in self.mods.items():
 			for i in range(len(m.sources)):
 				if m.sources[i] == name:
 					return m.vals[i]
@@ -63,20 +63,20 @@ class ModifierList:
 	# Returns whether delete happened
 	def remove_modifier_by_name(self, name):
 		name = name.lower()
-		for m in self.mods:
+		for stat, m in self.mods.items():
 			for i in range(len(m.sources)):
 				if m.sources[i] == name:
 					del m.sources[i]
 					del m.vals[i]
 					if len(m.sources) < 1:
-						del m
+						del self.mods[stat]
 					return True
 		return False
 		
 	# Returns whether delete happened
 	def remove_modifier_by_stat(self, stat):
 		stat = stat.upper()
-		if stat not in self.mods:
+		for stat, m in self.mods.items():
 			return False
 		del self.mods[stat]
 		return True

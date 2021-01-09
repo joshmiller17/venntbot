@@ -29,7 +29,7 @@ class GM(commands.Cog):
 		"""Roll someone's attack with a weapon. For GM use only."""
 		target_ent = db.find(target)
 		if target_ent is None:
-			await ctx.send("No target named " + target + ", try:")
+			await communication.send(ctx,"No target named " + target + ", try:")
 			await init.list_enemies_internal(ctx)
 			return
 		
@@ -44,7 +44,7 @@ class GM(commands.Cog):
 				break
 				
 		if not found:
-			await ctx.send("Unrecognized weapon: " + str(weapon) + ".")
+			await communication.send(ctx,"Unrecognized weapon: " + str(weapon) + ".")
 			return
 			
 		attacker_ent = db.find(who)
@@ -52,18 +52,18 @@ class GM(commands.Cog):
 		acc = relevant_attr * 10 + stats.clean_modifier(acc_mod)
 		acc_mods = attacker_ent.mods.get_modifier_by_stat("ACC")
 		if acc_mods is not None:
-			await ctx.send("Accuracy modifiers: " + str(acc_mods.total()) + " from " + " and ".join(acc_mods.sources))
+			await communication.send(ctx,"Accuracy modifiers: " + str(acc_mods.total()) + " from " + " and ".join(acc_mods.sources))
 			acc += acc_mods.total()
 		if "mods" in weapon_dict and "ACC" in weapon_dict["mods"]:
 			acc += stats.clean_modifier(weapon_dict["mods"]["ACC"])
-			await ctx.send(weapon_dict["mods"]["ACC"] + " ACC from " + weapon)
+			await communication.send(ctx,weapon_dict["mods"]["ACC"] + " ACC from " + weapon)
 		vim = target_ent.get_stat("VIM")
 		
 		db.LAST_ACTION = act.Action(act.ActionType.ATTACK, weapon)
 		db.LAST_ACTION.add_effect(act.ActionRole.USER, attacker_ent, {"A":2})
 		attacker_ent.actions -= 2
 		
-		await ctx.send(who + " attacks " + target + " with a " + weapon + "!")
+		await communication.send(ctx,who + " attacks " + target + " with a " + weapon + "!")
 		rollstr = "(" + w_dmg + "[" + weapon + "] +" + str(relevant_attr) + "[" + w_attr + "])" + (dmg_mod if dmg_mod != "+0" else "")
 		mods = attacker_ent.mods.get_modifier_by_stat("DMG")
 		if mods is not None:
@@ -80,11 +80,11 @@ class GM(commands.Cog):
 				if key == "BURNING":
 					res = await stats.do_roll(ctx, val)
 					target_ent.mods.add_modifier("BURNING", "burning", res)
-					await ctx.send(target + " takes " + str(res) + " burning!")
+					await communication.send(ctx,target + " takes " + str(res) + " burning!")
 				if key == "BLEEDING":
 					res = await stats.do_roll(ctx, val)
 					target_ent.mods.add_modifier("BLEEDING", "bleeding", res)
-					await ctx.send(target + " takes " + str(res) + " bleeding!")
+					await communication.send(ctx,target + " takes " + str(res) + " bleeding!")
 	
 
 	@commands.command(pass_context=True)
@@ -96,7 +96,10 @@ class GM(commands.Cog):
 		await ctx.message.add_reaction(db.OK)
 		
 	async def why_cant_afford(self, ctx, entity, abiObj):
-		await ctx.send(who + " can't afford " + abiObj.name)
+		if abiObj.cost is None:
+			await communication.send(ctx,abiObj.name + " has no defined cost.")
+			return
+		await communication.send(ctx,entity.display_name() + " can't afford " + abiObj.name)
 		reasons = []
 		for key, val in abiObj.cost.items():
 			if key == 'A' and entity.actions < val:
@@ -107,7 +110,7 @@ class GM(commands.Cog):
 				reasons.append("{0} has {1} MP but needs {2}".format(entity.display_name(), entity.attrs["MP"], val))
 			if key == 'V' and entity.actions < val:
 				reasons.append("{0} has {1} Vim but needs {2}".format(entity.display_name(), entity.attrs["VIM"], val))
-		await ctx.send("```\n{0}\n```".format("\n".join(reasons)))
+		await communication.send(ctx,"```\n{0}\n```".format("\n".join(reasons)))
 			
 	async def describe_spend(self, ctx, entity, abiObj):
 		spent = []
@@ -121,17 +124,31 @@ class GM(commands.Cog):
 			if key == 'V' and entity.actions < val:
 				spent.append("{0} spent {1} Vim".format(entity.display_name(), val))
 		if spent != []:
-			await ctx.send("\n".join(spent))
+			await communication.send(ctx,"\n".join(spent))
 			
 	@commands.command(pass_context=True)
 	async def gm_skills(self, ctx, who):
 		"""List someone's skills."""
 		entity = db.find(who)
-		await ctx.send(", ".join(entity.skills))
+		await communication.send(ctx,", ".join(entity.skills))
+		
+	@commands.command(pass_context=True)
+	async def gm_rest(self, ctx, who, bonus="+0", hours="9"):
+		entity = db.find(who)
+		hours_clean = clean_modifier(hours)
+		bonus_clean = clean_modifier(bonus)
+		strength = entity.get_stat("STR") + bonus_clean
+		strength = max(strength, 1) # min 1
+		entity.change_resource_verbose(ctx, "MP", hours_clean)
+		entity.change_resource_verbose(ctx, "VIM", hours_clean)
+		entity.change_resource_verbose(ctx, "HP", strength)
 		
 	@commands.command(pass_context=True)
 	async def gm_use(self, ctx, who, *ability):
 		"""Use someone's ability. For GM use only."""
+		if not abilityClass.ability_exists(*ability):
+			await communication.send(ctx,"I'm not sure what ability that is.")
+			return
 		abiObj = abilityClass.get_ability(" ".join(ability[:]))
 		user = db.find(who)
 		if not user.can_afford(abiObj.cost):
@@ -177,6 +194,6 @@ class GM(commands.Cog):
 		roll_res = stats.do_check(user, "SPI")
 		dl = int(abiObj.casting_dl[cast_strength])
 		if roll_res >= dl:
-			await ctx.send("Success! ({0} > {1})".format(roll_res, dl))
+			await communication.send(ctx,"Success! ({0} > {1})".format(roll_res, dl))
 		else:
-			await ctx.send("Failure! ({0} < {1})".format(roll_res, dl))
+			await communication.send(ctx,"Failure! ({0} < {1})".format(roll_res, dl))

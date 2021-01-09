@@ -4,7 +4,7 @@
 import discord
 from discord.ext import commands
 
-import random, d20, operator, time, re
+import random, d20, operator, time, sched, time, asyncio
 from enum import Enum
 
 
@@ -27,6 +27,58 @@ class CommState(Enum):
 	
 COMM_STATE = None
 ABILITY_LIST_CACHE = None
+SECONDS_PER_MSG_BATCH = 1
+COMM_BOT = None
+CTX_TO_MSG = {} # ctx : message obj
+MSGS_SENT = False
+
+async def send(ctx, message):
+	if not COMM_BOT:
+		logger.err("send", "COMM_BOT not initialized")
+	if ctx not in COMM_BOT.message_queue:
+		COMM_BOT.message_queue[ctx] = []
+	COMM_BOT.message_queue[ctx].append(message)
+
+# call this send instead when you need the Message obj back
+async def send_and_return(ctx, message):
+	await send(ctx, message)
+	return await asyncio.create_task(get_message(ctx))
+	
+async def get_message(ctx):
+	global CTX_TO_MSG
+	wait_time = 0
+	while True:
+		if MSGS_SENT and ctx in CTX_TO_MSG:
+			ret = CTX_TO_MSG[ctx]
+			del CTX_TO_MSG[ctx]
+			return ret
+		await asyncio.sleep(0.5)
+		wait_time += 0.5
+		if wait_time > SECONDS_PER_MSG_BATCH * 3:
+			logger.err("get_message", "no message found")
+			return None
+
+# split contents into messages < 2000 characters (Discord limit)
+async def send_in_batches(ctx, msg_list):
+	global CTX_TO_MSG
+	if msg_list == []:
+		return
+	#logger.log("send_in_batches",str(COMM_BOT.message_queue))
+	msg_length = 0
+	msg = ""
+	for line in msg_list:
+		line_len = len(line)
+		if msg_length + line_len > 1999:
+			message_obj = await ctx.send(msg)
+			msg_length = 0
+			msg = ""
+		if msg != "":
+			msg += "\n"
+		msg += line
+		msg_length += line_len + 2 # newline
+	if msg_length > 0: # finally, send whatever is left
+		message_obj = await ctx.send(msg)
+	CTX_TO_MSG[ctx] = message_obj
 
 async def suggest_quick_actions(ctx, entity):
 	global COMM_STATE
@@ -54,7 +106,7 @@ async def suggest_quick_actions(ctx, entity):
 	ret = []
 	for action, emoji in available_actions.items():
 		ret.append("{0} {1}".format(emoji, action))
-	m = await ctx.send("*(Quick actions: {0}.)*".format(", ".join(ret)))
+	m = await send_and_return(ctx, "*(Quick actions: {0}.)*".format(", ".join(ret)))
 	for action, emoji in available_actions.items():
 		await m.add_reaction(emoji)
 	db.QUICK_ACTION_MESSAGE = m
@@ -66,7 +118,7 @@ async def suggest_quick_reactions(ctx, entity):
 	
 	if entity.reactions < 1:
 		return
-	m = await ctx.send("*(Quick reactions: {0} Dodge, {1} Block.)*".format(db.DASH, db.SHIELD))
+	m = await send_and_return(ctx,"*(Quick reactions: {0} Dodge, {1} Block.)*".format(db.DASH, db.SHIELD))
 	await m.add_reaction(db.DASH)
 	await m.add_reaction(db.SHIELD)
 	db.QUICK_REACTION_MESSAGE = m
@@ -90,7 +142,7 @@ async def make_choice_list(self, ctx, choices, offset):
 	for c, emoji in choice_map.items():
 		ret.append("{0} {1}".format(emoji, c))
 	
-	m = await ctx.send("```\n{0}\n```".format("\n".join(ret)))
+	m = await send_and_return(ctx,"```\n{0}\n```".format("\n".join(ret)))
 	for i in range(count):
 		await m.add_reaction(db.NUMBERS[i])
 	if has_more:
@@ -131,7 +183,7 @@ async def make_ability_list(self, ctx, offset):
 	
 	for abiObj in ABILITY_LIST_CACHE:			
 		ability_list.append("{0} -- {1}".format(abiObj.name, abiObj.readable_cost))
-	await ctx.send("Use which ability?")
+	await send(ctx,"Use which ability?")
 	await make_choice_list(self, ctx, ability_list, offset)
 	COMM_STATE = CommState.ABILITIES
 	self.ability_list_offset += 9
@@ -142,13 +194,13 @@ async def make_enemy_list(self, ctx, offset):
 	enemy_list = []
 	for e in db.ENEMIES:
 		enemy_list.append(e.display_name() + " - " + stats.get_status(e))
-	await ctx.send("Attack who?")
+	await send(ctx,"Attack who?")
 	await make_choice_list(self, ctx, enemy_list, offset)
 	COMM_STATE = CommState.ATTACK
 	self.enemy_list_offset += 9
 	
 async def ask_cast_strength(self, ctx):
-	m = await ctx.send("Cast at what strength? {0} Half, {1} Normal, {2} Double".format(db.FAST, db.MAGIC, db.POWERFUL))
+	m = await send_and_return(ctx,"Cast at what strength? {0} Half, {1} Normal, {2} Double".format(db.FAST, db.MAGIC, db.POWERFUL))
 	await m.add_reaction(db.FAST)
 	await m.add_reaction(db.MAGIC)
 	await m.add_reaction(db.POWERFUL)
@@ -159,12 +211,33 @@ class Communication(commands.Cog):
 
 
 	def __init__(self, bot):
+		global COMM_BOT
 		self.bot = bot
+		COMM_BOT = self
 		self.enemy_list_offset = 0
 		self.ability_list_offset = 0
 		self.chosen_ability = None # stored for convenience
 		self.initCog = self.bot.get_cog('Initiative')
 		self.gm = self.bot.get_cog('GM')
+		self.message_queue = {} # ctx : msgs
+		self.scheduler = None
+		
+	@commands.Cog.listener()
+	async def on_message(self, message):
+		if not self.scheduler:
+			self.scheduler = asyncio.create_task(self.schedule_messages(SECONDS_PER_MSG_BATCH))
+
+
+	async def schedule_messages(self, timeout):
+		global CTX_TO_MSG, MSGS_SENT
+		while True:
+			await asyncio.sleep(timeout)
+			MSGS_SENT = False
+			CTX_TO_MSG = {}
+			for ctx, msgs in self.message_queue.items():
+				await send_in_batches(ctx, msgs)
+			MSGS_SENT = True
+			self.message_queue = {}
 	
 	async def remove_bot_reactions(self, message):
 		for reaction in message.reactions:

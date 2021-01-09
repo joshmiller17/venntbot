@@ -8,6 +8,7 @@ db = importlib.import_module("db")
 sheets = importlib.import_module("sheets")
 stats = importlib.import_module("stats")
 mod = importlib.import_module("modifier")
+communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("entity")
 
@@ -39,7 +40,12 @@ class Entity:
 		self.attrs[stat] += val
 		
 	def get_stat(self, stat):
-		ret = self.attrs[stat]
+		if stat.lower() == "action" or stat.lower() == "actions":
+			ret = self.actions
+		elif stat.lower() == "reaction" or stat.lower() == "reactions":
+			ret = self.reactions
+		else:
+			ret = self.attrs[stat]
 		mods = self.mods.get_modifier_by_stat(stat)
 		if mods is not None:
 			ret += mods.total()
@@ -63,6 +69,8 @@ class Entity:
 		
 	# do we have these resources
 	def can_afford(self, cost):
+		if cost is None:
+			return False # True?
 		for key, val in cost.items():
 			try:
 				val = int(val)
@@ -91,7 +99,7 @@ class Entity:
 				if self.attrs["HP"] < val:
 					logger.log("can_afford", "HP " + str(self.attrs["HP"]) + " < " + str(val))
 					return False
-			if key == 'HERO':
+			if key == 'HERO' or key == 'P':
 				if self.attrs["HERO"] < val:
 					logger.log("can_afford", "HERO " + str(self.attrs["HERO"]) + " < " + str(val))
 					return False
@@ -101,22 +109,22 @@ class Entity:
 	async def change_resource_verbose(self, ctx, key, delta):
 		if key == 'A':
 			self.actions += delta
-			await ctx.send(str(self.actions) + " Action(s) left")
+			await communication.send(ctx,str(self.actions) + " Action(s) left")
 		if key == 'R':
 			self.reactions += delta
-			await ctx.send(str(self.reactions) + " Reaction(s) left")
+			await communication.send(ctx,str(self.reactions) + " Reaction(s) left")
 		if key == 'M':
 			self.attrs["MP"] += delta
-			await ctx.send(str(self.attrs["MP"]) + " MP left")
+			await communication.send(ctx,str(self.attrs["MP"]) + " MP left")
 		if key == 'V':
 			self.attrs["VIM"] += delta
-			await ctx.send(str(self.attrs["VIM"]) + " Vim left")
+			await communication.send(ctx,str(self.attrs["VIM"]) + " Vim left")
 		if key == 'HP':
 			self.attrs["HP"] += delta
-			await ctx.send(str(self.attrs["HP"]) + " HP left")
-		if key == 'HERO':
+			await communication.send(ctx,str(self.attrs["HP"]) + " HP left")
+		if key == 'HERO' or key == 'P':
 			self.attrs["HERO"] += delta
-			await ctx.send(str(self.attrs["HERO"]) + " Hero points left")
+			await communication.send(ctx,str(self.attrs["HERO"]) + " Hero points left")
 			
 	def change_resource(self, key, delta):
 		if key == 'A':
@@ -129,7 +137,7 @@ class Entity:
 			self.attrs["VIM"] += delta
 		if key == 'HP':
 			self.attrs["HP"] += delta
-		if key == 'HERO':
+		if key == 'HERO' or key == 'P':
 			self.attrs["HERO"] += delta
 		
 		
@@ -165,6 +173,7 @@ class Entity:
 				pass
 			if not isinstance(val, int):
 				logger.log("use_resources_verbose", "ignoring " + key + ": " + str(val))
+				await communication.send(ctx,"I don't know what " + str(val) + " (" + key + ") means.")
 				if key == 'A' or key == 'R' or key == 'M' or key == 'V': # should be able to parse
 					able_to_calculate = False
 				continue # ignore X, *, Attack, Passive, etc

@@ -26,7 +26,7 @@ async def add_turn_internal(self, ctx, display_name, who, result):
 		multiturn += 1
 
 	if not entity:
-		await ctx.send("No entity found named " + display_name)
+		await communication.send(ctx,"No entity found named " + display_name)
 		await ctx.message.add_reaction(db.NOT_OK)
 		return
 		
@@ -38,9 +38,9 @@ async def list_enemies_internal(ctx):
 	for e in db.ENEMIES:
 		ret.append(e.display_name() + " - " + stats.get_status(e))
 	if ret != []:
-		await ctx.send("```{0}```".format("\n".join(ret)))
+		await communication.send(ctx,"```{0}```".format("\n".join(ret)))
 	else:
-		await ctx.send("No enemies")
+		await communication.send(ctx,"No enemies")
 
 class Initiative(commands.Cog):
 	"""Commands for turn order."""
@@ -49,8 +49,7 @@ class Initiative(commands.Cog):
 		self.bot = bot
 		self.turns = {} # who : value + 0.01 * score + 0.001* rand float for tie breaking
 		self.init_index = 99
-		self.whose_turn = None # string
-		
+		self.whose_turn = None # string		
 	@commands.command(pass_context=True)
 	async def test(self, ctx, help="For debug only."):
 		await self.new_init(ctx)
@@ -62,14 +61,14 @@ class Initiative(commands.Cog):
 		"""Advance the turn order."""
 		if self.turns == {}:
 			await ctx.message.add_reaction(db.NOT_OK)
-			await ctx.send("Not in combat.")
+			await communication.send(ctx,"Not in combat.")
 			return
 		sorted_turns = sorted(self.turns.items(), key=operator.itemgetter(1),reverse=True)
 		logger.log("next_turn",str(sorted_turns))
 		for who, val in sorted_turns:
 			if val < self.init_index:
 				self.init_index = val
-				await ctx.send("Now " + who + "'s turn.")
+				await communication.send(ctx,"Now " + who + "'s turn.")
 				if who.startswith("[ENEMY]"):
 					who = who[who.index('x')+2:]
 					logger.log("next_turn", "who is " + who)
@@ -82,7 +81,7 @@ class Initiative(commands.Cog):
 				return
 		# reached the bottom, wrap around
 		self.init_index = 99
-		await ctx.send("New round!")
+		await communication.send(ctx,"New round!")
 		await combat.handle_round_effects(ctx)
 		await self.next_turn(ctx)
 		
@@ -123,7 +122,7 @@ class Initiative(commands.Cog):
 		for who, val in sorted_turns:
 			turns.append(who)
 		ret += ', '.join(turns)
-		await ctx.send(ret)
+		await communication.send(ctx,ret)
 
 	@commands.command(pass_context=True)
 	async def new_init(self, ctx, go=""):

@@ -12,6 +12,13 @@ logger = logClass.Logger("ability")
 # style: globals are in all caps
 ABILITY_CACHE = {} # name : Ability
 
+# Returns whether ability search has exactly 1 approximation
+def ability_exists(*args):
+	approximations, URL = webscraper.find_ability(" ".join(args[:]))
+	if len(approximations) != 1:
+		return False
+	return True
+
 def get_ability(name):
 	for key, value in ABILITY_CACHE.items():
 		if key == name:
@@ -107,7 +114,7 @@ def parse_casting_dl(line):
 
 def parse_activation_cost(line):
 	cost = {}
-	matches = re.findall("Activation: ((?:Passive)|(\d Actions?)|(Attack)|(?:, )|(\d*\**X? Actions?)|(\d*\**X? Reactions?)|(\d*\**X? Vim)|(\d*\**X? MP))*", line)
+	matches = re.findall("Activation: ((?:Passive)|(\d*\**X? Hero Points?)|(\d*\**X? Actions?)|(Attack)|(?:, )|(\d*\**X? Actions?)|(\d*\**X? Reactions?)|(\d*\**X? Vim)|(\d*\**X? MP))*", line)
 	for match_tuple in matches:
 		#logger.log("parse_activation_cost", "tuple: " + str(match_tuple))
 		for match in match_tuple:
@@ -121,7 +128,6 @@ def parse_activation_cost(line):
 				continue
 			if "Activation" not in match: # skip "capture all" group
 				match = match.replace("Hero Point", "Point")
-				print(match) # TODO remove
 				cost_str = match.split(' ')
 				type = cost_str[1][0] # first char of word
 				amt = cost_str[0]

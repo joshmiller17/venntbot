@@ -10,6 +10,7 @@ import importlib
 db = importlib.import_module("db")
 webscraper = importlib.import_module("webscraper")
 abilityClass = importlib.import_module("ability")
+communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("meta")
 
@@ -79,22 +80,22 @@ class Meta(commands.Cog):
 	@commands.command(pass_context=True)
 	async def ping(self, ctx):
 		"""Pong!"""
-		await ctx.send("Pong!")
+		await communication.send(ctx,"Pong!")
 		
 	@commands.command(pass_context=True)
 	async def test_script(self, ctx, which, help="For debug only."):
 		altered = ctx.message
-		await ctx.send("Now running test fight.")
+		await communication.send(ctx,"Now running test fight.")
 		if which == "easy":
 			script = TEST_SCRIPT_EASY
 		else:
 			script = TEST_SCRIPT_HARD
 		for line in script:
 			altered.content = line
-			await ctx.send("`> " + line + "`")
+			await communication.send(ctx,"`> " + line + "`")
 			await self.bot.on_message(altered)
 			time.sleep(2)
-		await ctx.send("Done.")
+		await communication.send(ctx,"Done.")
 	
 
 	@commands.command(pass_context=True, aliases=['setalias'])
@@ -106,12 +107,12 @@ class Meta(commands.Cog):
 		new_cmd = new_cmd.split(' / ')
 		if len(new_cmd) > 10:
 			await ctx.message.add_reaction(db.NOT_OK)
-			await ctx.send("Macros are limited to 10 commands.")
+			await communication.send(ctx,"Macros are limited to 10 commands.")
 			return
 		for cmd in new_cmd:
 			if cmd.startswith("$alias") or cmd.startswith("$macro"):
 				await ctx.message.add_reaction(db.NOT_OK)
-				await ctx.send("To avoid infinite loops, you cannot define a macro which calls another macro.")
+				await communication.send(ctx,"To avoid infinite loops, you cannot define a macro which calls another macro.")
 				return
 		for user in self.macros:
 			if user["user"] == who:
@@ -122,7 +123,7 @@ class Meta(commands.Cog):
 			new_entry = {"user": who, macro : new_cmd}
 			self.macros.append(new_entry)
 		save_macros(self.macros)
-		await ctx.send(macro + " saved.")
+		await communication.send(ctx,macro + " saved.")
 		
 	@commands.command(pass_context=True, aliases=['alias'])
 	async def macro(self, ctx, macro, *adlibs):
@@ -162,17 +163,17 @@ class Meta(commands.Cog):
 						continue
 					if macro is not None:
 						if key == macro:
-							await ctx.send(key + ": " + " / ".join(val))
+							await communication.send(ctx,key + ": " + " / ".join(val))
 							return
 					else:
 						macros.append("{0} -- {1} command(s)".format(key, len(val)))
 		if macros != []:
-			await ctx.send(ret.format("\n".join(macros)))
+			await communication.send(ctx,ret.format("\n".join(macros)))
 		else:
 			if macro is not None:
-				await ctx.send("No macro found named " + macro)
+				await communication.send(ctx,"No macro found named " + macro)
 			else:
-				await ctx.send("No macros saved.")
+				await communication.send(ctx,"No macros saved.")
 			
 			
 	@commands.command(pass_context=True)
@@ -180,59 +181,61 @@ class Meta(commands.Cog):
 		"""Say something as your character. For use with macros."""
 		who = str(ctx.message.author)
 		character = get_character_name(who)
-		await ctx.send("**{0}**: {1}".format(character, " ".join(msg)))
+		await communication.send(ctx,"**{0}**: {1}".format(character, " ".join(msg)))
 	
 	@commands.command(pass_context=True, aliases=['me'])
 	async def emote(self, ctx, *msg):
 		"""Do something as your character. For use with macros."""
 		who = str(ctx.message.author)
 		character = get_character_name(who)
-		await ctx.send("*{0} {1}*".format(character, " ".join(msg)))
+		await communication.send(ctx,"*{0} {1}*".format(character, " ".join(msg)))
 
 	@commands.command(pass_context=True)
 	async def uptime(self, ctx):
 		"""Get bot's lifespan"""
-		await ctx.send("I've been up for " + str(datetime.timedelta(seconds = (time.time() - START_TIME))))
+		await communication.send(ctx,"I've been up for " + str(datetime.timedelta(seconds = (time.time() - START_TIME))))
 		
 	@commands.command(pass_context=True)
 	async def cost(self, ctx, *ability):
 		"""Get an ability's cost."""
 		name = " ".join(ability[:])
 		ability = abilityClass.get_ability(name)
-		await ctx.send(str(ability.readable_cost))
+		await communication.send(ctx,str(ability.readable_cost))
 
 	@commands.command(pass_context=True)
-	async def whatis(self, ctx, *ability):
-		"""Get an ability's info."""
+	async def whatis(self, ctx, *query):
+		"""Get the info of a weapon or ability."""
+		potential_weapon = query[0] # weapons can only be one string
+		for weapon in db.weapons:
+			if weapon["name"].lower() == potential_weapon.lower():
+				ret = weapon["name"] + " weapon:\n"
+				ret += "Attr: " + weapon["attr"] + "\n"
+				ret += "Dmg: "+ weapon["dmg"] + "\n"
+				if weapon["mods"]:
+					mods = []
+					for mod, val in weapon["mods"].items():
+						mods.append(mod + ": " + val)
+					ret += "\n".join(mods)
+				await communication.send(ctx,ret)
+				return
 		matches, URL = webscraper.find_ability(*ability)
 		if len(matches) == 1:
 			contents = webscraper.get_ability_contents(matches[0], URL)
 			logger.log("whatis",str(contents))
 			contents.append("From: <" + URL + ">")
-			# ----- split contents into msgs < 2000 char
-			msg_length = 0
-			msg = ""
 			if contents == []:
-				await ctx.send("I found that ability but I didn't see any description for it.")
-			for line in contents:
-				line_len = len(line)
-				if msg_length + line_len > 1800:
-					await ctx.send(msg)
-					msg_length = 0
-					msg = ""
-				msg += line
-				msg_length += line_len
-			if msg_length > 0:
-				await ctx.send(msg)
+				await communication.send(ctx,"I found that ability but I didn't see any description for it.")
+			else:
+				communication.send(ctx, contents)
 			# ----- end sending msg
 		elif len(matches) > 1:
 			if len(matches) < 10:
-				await ctx.send("Did you mean: " + " or ".join(matches))
+				await communication.send(ctx,"Did you mean: " + " or ".join(matches))
 			else:
-				await ctx.send("Your query matches too many abilities. Please try being more specific.")
+				await communication.send(ctx,"Your query matches too many abilities. Please try being more specific.")
 				logger.log("whatis","found too many matches")
 				logger.log("whatis",matches)
 		else:
 			ability = " ".join(ability[:])
-			await ctx.send("No ability found: " + ability)
+			await communication.send(ctx,"No ability found: " + ability)
 	

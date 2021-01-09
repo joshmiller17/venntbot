@@ -52,7 +52,7 @@ async def parse(message):
 			entity = db.find(who)
 		elif match.lower() == "move" or match.lower() == "moves":
 			success = await entity.use_resources_verbose(ctx, {'A':1})
-			await ctx.send(who + " moved.")
+			await communication.send(ctx,who + " moved.")
 		elif match in [e.display_name() for e in db.ENEMIES]:
 			target = match
 		elif db.get_weapon(match) is not None:
@@ -77,7 +77,7 @@ async def parse(message):
 			elif mod[1].upper() == "DMG":
 				dmg_mod = mod[0]
 		else:
-			await ctx.send("Sorry, I don't understand [" + match + "]")
+			await communication.send(ctx,"Sorry, I don't understand [" + match + "]")
 	if target is not None and weapon is not None:
 		await gm.gm_attack(ctx, who, target, weapon, acc_mod, dmg_mod)
 		target = None
@@ -113,11 +113,11 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
 	if isinstance(error, discord.ext.commands.errors.CommandNotFound):
-		await ctx.send("No command found: " + ctx.message.content)
+		await communication.send(ctx,"No command found: " + ctx.message.content)
 	elif isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-		await ctx.send("That's not how that command works. Try $help <command>")
+		await communication.send(ctx,"That's not how that command works. Try $help <command>")
 	else:
-		await ctx.send("Oh, yikes! That's a new kind of error.\n" + str(error))
+		await communication.send(ctx,"Oh, yikes! That's a new kind of error.\n" + str(error))
 		traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 	
 @client.event
