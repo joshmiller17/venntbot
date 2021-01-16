@@ -17,6 +17,7 @@
 - Internal functions deal in numbers, command functions must convert numeric args using `stats.clean_modifier(arg)`
 - Internal versions of command functions are named `do_x`
 - Each class builds its own copy of Logger: logging uses this instead of print statements
+- Instead of the typical Discord way of sending messages with `ctx.send(msg)`, modules call `communication.send(ctx, msg)` in order to batch messages that may get sent at the same time, reducing spam
 - Naming conventions:
   - who/target/attacker: the human-readable string referring to an entity, equivalent to `entity.display_name()`
   - e/ent/entity: the entity object for a player or enemy, equivalent to `db.find(who)`
