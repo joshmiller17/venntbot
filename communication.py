@@ -4,7 +4,7 @@
 import discord
 from discord.ext import commands
 
-import random, d20, operator, time, sched, time, asyncio
+import random, d20, operator, time, time, asyncio
 from enum import Enum
 
 

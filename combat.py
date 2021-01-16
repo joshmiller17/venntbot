@@ -18,6 +18,8 @@ communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("combat")
 
+# TODO temp HP
+
 async def apply_attack(ctx, target_ent, dmg):
 	armor = target_ent.get_stat("ARMOR")
 	true_dmg = max(dmg - armor, 0)
@@ -217,7 +219,7 @@ class Combat(commands.Cog):
 	async def heal(self, ctx, who, amount):
 		"""Heal someone."""
 		entity = db.find(who)
-		amount_clean = clean_modifier(amount)
+		amount_clean = stats.clean_modifier(amount)
 		bleeding = entity.mods.get_modifier_by_stat("BLEEDING")
 		if bleeding is not None:
 			if bleeding.total() <= amount_clean:

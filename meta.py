@@ -218,7 +218,7 @@ class Meta(commands.Cog):
 					ret += "\n".join(mods)
 				await communication.send(ctx,ret)
 				return
-		matches, URL = webscraper.find_ability(*ability)
+		matches, URL = webscraper.find_ability(*query)
 		if len(matches) == 1:
 			contents = webscraper.get_ability_contents(matches[0], URL)
 			logger.log("whatis",str(contents))
@@ -236,6 +236,6 @@ class Meta(commands.Cog):
 				logger.log("whatis","found too many matches")
 				logger.log("whatis",matches)
 		else:
-			ability = " ".join(ability[:])
-			await communication.send(ctx,"No ability found: " + ability)
+			query = " ".join(query[:])
+			await communication.send(ctx,"No ability found: " + query)
 	

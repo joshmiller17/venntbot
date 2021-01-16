@@ -152,6 +152,8 @@ class Stats(commands.Cog):
 	async def attr(self, ctx, who, which):
 		"""Get someone's attributes."""
 		which = which.upper()
+		if who == 'me':
+			who = meta.get_character_name(ctx.message.author)
 		await communication.send(ctx,who + "'s " + which + " is " + str(db.find(who).get_stat(which)))
 
 
