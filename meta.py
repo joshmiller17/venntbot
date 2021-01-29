@@ -226,7 +226,7 @@ class Meta(commands.Cog):
 			if contents == []:
 				await communication.send(ctx,"I found that ability but I didn't see any description for it.")
 			else:
-				communication.send(ctx, contents)
+				await communication.send(ctx, contents)
 			# ----- end sending msg
 		elif len(matches) > 1:
 			if len(matches) < 10:
