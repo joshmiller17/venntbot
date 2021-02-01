@@ -27,8 +27,8 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 client = commands.Bot(command_prefix="$", help_command=PrettyHelp())
 
 # Authenticate with Vennt Server API
-#SERVER_URL = "https://topazgryphon.org:3004/"
-SERVER_URL = "http://localhost:3004/"
+SERVER_URL = "https://topazgryphon.org:3004/"
+#SERVER_URL = "http://localhost:3004/"
 
 with open("api_credentials.json") as f:
 	vennt_creds = json.load(f)
