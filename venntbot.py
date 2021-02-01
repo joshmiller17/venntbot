@@ -1,6 +1,6 @@
 # --- Josh Aaron Miller 2021
 # --- main run for Discord Vennt Bot
-import discord, os, sys, traceback, json, time, re
+import discord, os, sys, traceback, json, time, re, requests
 from pretty_help import PrettyHelp
 
 from discord.ext import commands
@@ -25,6 +25,28 @@ logger = logClass.Logger("venntbot")
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 client = commands.Bot(command_prefix="$", help_command=PrettyHelp())
+
+# Authenticate with Vennt Server API
+#SERVER_URL = "https://topazgryphon.org:3004/"
+SERVER_URL = "http://localhost:3004/"
+
+with open("api_credentials.json") as f:
+	vennt_creds = json.load(f)
+
+# register if need be
+username = vennt_creds["username"]
+password = vennt_creds["password"]
+data = '{"register": "%s", "password": "%s"}' % (username, password)
+response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
+
+# login
+data = '{"login": "%s", "password": "%s"}' % (username, password)
+response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
+
+response = json.loads(response.text)
+auth_token = response["auth_token"] # assume success
+client.auth_token = auth_token
+
 
 
 async def parse(message):

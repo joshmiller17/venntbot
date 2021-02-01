@@ -4,7 +4,7 @@
 import discord
 from discord.ext import commands
 
-import time, datetime, json, random
+import time, datetime, json, random, requests
 
 import importlib
 db = importlib.import_module("db")
@@ -205,37 +205,23 @@ class Meta(commands.Cog):
 	@commands.command(pass_context=True)
 	async def whatis(self, ctx, *query):
 		"""Get the info of a weapon or ability."""
+		
+		
+		# Server API call instead
 		potential_weapon = query[0] # weapons can only be one string
-		for weapon in db.weapons:
-			if weapon["name"].lower() == potential_weapon.lower():
-				ret = weapon["name"] + " weapon:\n"
-				ret += "Attr: " + weapon["attr"] + "\n"
-				ret += "Dmg: "+ weapon["dmg"] + "\n"
-				if weapon["mods"]:
-					mods = []
-					for mod, val in weapon["mods"].items():
-						mods.append(mod + ": " + val)
-					ret += "\n".join(mods)
-				await communication.send(ctx,ret)
-				return
-		matches, URL = webscraper.find_ability(*query)
-		if len(matches) == 1:
-			contents = webscraper.get_ability_contents(matches[0], URL)
-			logger.log("whatis",str(contents))
-			contents.append("From: <" + URL + ">")
-			if contents == []:
-				await communication.send(ctx,"I found that ability but I didn't see any description for it.")
+		data = {"auth_token":self.bot.auth_token,"name":"%s" % potential_weapon}
+		response = requests.get("http://localhost:3004/" + 'get_weapon?q=%s' % json.dumps(data), verify=False)
+		
+		response = json.loads(response.text)
+		if not response["success"]:
+			data = {"auth_token":self.bot.auth_token,"name":"%s" % " ".join(query[:])}
+			response = requests.get("http://localhost:3004/" + 'lookup_ability?q=%s' % json.dumps(data), verify=False)
+			response = json.loads(response.text)
+			print(response)
+			if not response["success"]:
+				await communication.send(ctx, response["info"])
 			else:
-				await communication.send(ctx, contents)
-			# ----- end sending msg
-		elif len(matches) > 1:
-			if len(matches) < 10:
-				await communication.send(ctx,"Did you mean: " + " or ".join(matches))
-			else:
-				await communication.send(ctx,"Your query matches too many abilities. Please try being more specific.")
-				logger.log("whatis","found too many matches")
-				logger.log("whatis",matches)
+				await communication.send(ctx, response["value"])
 		else:
-			query = " ".join(query[:])
-			await communication.send(ctx,"No ability found: " + query)
-	
+			print(response)
+			await communication.send(ctx, json.dumps(response["value"]))
