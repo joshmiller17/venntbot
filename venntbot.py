@@ -1,6 +1,6 @@
 # --- Josh Aaron Miller 2021
 # --- main run for Discord Vennt Bot
-import discord, os, sys, traceback, json, time, re, requests
+import discord, os, sys, traceback, json, time, re, requests, urllib
 from pretty_help import PrettyHelp
 
 from discord.ext import commands
@@ -24,7 +24,7 @@ logger = logClass.Logger("venntbot")
 # Discord setup
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-client = commands.Bot(command_prefix="$", help_command=PrettyHelp())
+client = commands.Bot(command_prefix=("$","/", "!"), help_command=PrettyHelp())
 
 # Authenticate with Vennt Server API
 SERVER_URL = "https://topazgryphon.org:3004/"
@@ -36,11 +36,13 @@ with open("api_credentials.json") as f:
 # register if need be
 username = vennt_creds["username"]
 password = vennt_creds["password"]
-data = '{"register": "%s", "password": "%s"}' % (username, password)
+data = {"register": username, "password": password}
+data = urllib.parse.urlencode(data)
 response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
 
 # login
-data = '{"login": "%s", "password": "%s"}' % (username, password)
+data = {"login": username, "password": password}
+data = urllib.parse.urlencode(data)
 response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
 
 response = json.loads(response.text)
@@ -144,18 +146,24 @@ async def on_command_error(ctx, error):
 	
 @client.event
 async def on_message(message):
-	await client.process_commands(message)
 	if message.author == client.user:
 		return # don't respond to ourselves
 	if message.content.startswith('>'):
+		return # TODO
 		await parse(message)
-		
 	if isinstance(message.channel, discord.channel.DMChannel):
 		if (message.content == "quit"):
 			await do_quit(message)
 		if (message.content == "test"):
+			return # TODO
 			await do_tests(message)
-			
+	if "roll" in message.content: # FIXME
+		await client.process_commands(message)
+	else:
+		ctx = await client.get_context(message)
+		await communication.send(ctx, "That command is temporarily unavailable. Only rolling is allowed.")
+	
+
 client.description = "A bot to assist with running the Vennt RPG."
 client.add_cog(meta.Meta(client))
 client.add_cog(sheets.Sheets(client))
