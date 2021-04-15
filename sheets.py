@@ -36,7 +36,7 @@ READ_ONLY_STATS = {
 	"SPEED" : "B20" 
 }
 
-
+"""
 # Google Sheets API Login
 creds = None
 if os.path.exists('token.pickle'):
@@ -53,7 +53,7 @@ if not creds or not creds.valid:
 		pickle.dump(creds, token)
 service = build('sheets', 'v4', credentials=creds)
 sheet = service.spreadsheets()
-
+"""
 
 def get_sheet_id(char_name):
 	for character in db.characters:
