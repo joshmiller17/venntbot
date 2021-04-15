@@ -160,7 +160,7 @@ async def on_message(message):
 	if message.content.startswith("/"):
 		if "roll" in message.content: # FIXME
 			await client.process_commands(message)
-	    else:
+		else:
 			ctx = await client.get_context(message)
 			await communication.send(ctx, "That command is temporarily unavailable. Only rolling is allowed.")
 		
