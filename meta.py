@@ -203,10 +203,20 @@ class Meta(commands.Cog):
 		await communication.send(ctx,str(ability.readable_cost))
 
 	@commands.command(pass_context=True)
+	async def lookup(self, ctx, *query):
+		"""Get the info of an ability."""
+		data = {"auth_token":self.bot.auth_token,"name":"%s" % " ".join(query[:])}
+		response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?q=%s' % json.dumps(data), verify=False)
+		response = json.loads(response.text)
+		print(response)
+		if not response["success"]:
+			await communication.send(ctx, response["info"])
+		else:
+			await communication.send(ctx, response["value"])
+
+	@commands.command(pass_context=True)
 	async def whatis(self, ctx, *query):
-		"""Get the info of a weapon or ability."""
-		
-		
+		"""Get the info of a weapon or ability."""		
 		# Server API call instead
 		potential_weapon = query[0] # weapons can only be one string
 		data = {"auth_token":self.bot.auth_token,"name":"%s" % potential_weapon}

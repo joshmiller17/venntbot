@@ -158,7 +158,7 @@ async def on_message(message):
 			return # TODO
 			await do_tests(message)
 	if message.content.startswith("/"):
-		if "roll" in message.content: # FIXME
+		if "roll" in message.content or "lookup" in message.content: # FIXME
 			await client.process_commands(message)
 		else:
 			ctx = await client.get_context(message)
