@@ -37,12 +37,10 @@ with open("api_credentials.json") as f:
 username = vennt_creds["username"]
 password = vennt_creds["password"]
 data = '{"register": "%s", "password": "%s"}' % (username, password)
-data = urllib.parse.urlencode(data)
 response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
 
 # login
 data = '{"login": "%s", "password": "%s"}' % (username, password)
-data = urllib.parse.urlencode(data)
 response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
 
 response = json.loads(response.text)

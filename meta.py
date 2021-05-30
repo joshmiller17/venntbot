@@ -205,8 +205,7 @@ class Meta(commands.Cog):
 	@commands.command(pass_context=True)
 	async def lookup(self, ctx, *query):
 		"""Get the info of an ability."""
-		data = {"auth_token":self.bot.auth_token,"name":"%s" % " ".join(query[:])}
-		response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?q=%s' % json.dumps(data), verify=False)
+		response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?"auth_token"="%s"&"name"="%s"' % (self.bot.auth_token," ".join(query[:])), verify=False)
 		response = json.loads(response.text)
 		print(response)
 		if not response["success"]:
