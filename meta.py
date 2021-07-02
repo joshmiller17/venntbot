@@ -211,7 +211,7 @@ class Meta(commands.Cog):
 		if not response["success"]:
 			await communication.send(ctx, response["info"])
 		else:
-			await communication.send(ctx, " ".join(response["value"]))
+			await communication.send(ctx, "".join(response["value"]))
 
 	@commands.command(pass_context=True)
 	async def whatis(self, ctx, *query):
