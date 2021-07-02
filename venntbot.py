@@ -155,6 +155,13 @@ async def on_message(message):
 		if (message.content == "test"):
 			return # TODO
 			await do_tests(message)
+        if (message.content == "renew"):
+            data = '{"login": "%s", "password": "%s"}' % (username, password)
+            response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
+            response = json.loads(response.text)
+            auth_token = response["auth_token"] # assume success
+            client.auth_token = auth_token
+            await communication.send(ctx, "Authentication renewed.")
 	if message.content.startswith("/"):
 		if "roll" in message.content or "lookup" in message.content: # FIXME
 			await client.process_commands(message)
