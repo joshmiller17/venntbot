@@ -220,8 +220,7 @@ class Meta(commands.Cog):
             if msg:
                 await communication.send(ctx, "```" + msg + "```")
             else:
-                print("Error parsing")
-                print(response)
+                await communication.send(ctx, "No ability found.")
 
     @commands.command(pass_context=True)
     async def whatis(self, ctx, *query):
