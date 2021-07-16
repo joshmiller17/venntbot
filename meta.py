@@ -209,9 +209,19 @@ class Meta(commands.Cog):
 		response = json.loads(response.text)
 		print(response)
 		if not response["success"]:
-			await communication.send(ctx, response["info"])
+            if response["info"] == "Authentication invalid":
+                await self.bot.renew_auth(None)
+                print("Authentication renewed!")
+                self.lookup(ctx, *query)
+            else:
+                await communication.send(ctx, response["info"])
 		else:
-			await communication.send(ctx, "```" + "".join(response["value"]) + "```")
+            msg = "".join(response["value"])
+            if msg:
+                await communication.send(ctx, "```" + msg + "```")
+            else:
+                print("Error parsing")
+                print(response)
 
 	@commands.command(pass_context=True)
 	async def whatis(self, ctx, *query):

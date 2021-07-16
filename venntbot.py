@@ -125,6 +125,17 @@ async def do_tests(message):
             await client.on_message(altered)
             time.sleep(1)
     await message.author.send("Done.")
+    
+    
+async def renew_auth(message=None):
+    data = '{"login": "%s", "password": "%s"}' % (username, password)
+    response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
+    response = json.loads(response.text)
+    auth_token = response["auth_token"] # assume success
+    client.auth_token = auth_token
+    if message:
+        ctx = await client.get_context(message)
+        await communication.send(ctx, "Authentication renewed.")
 
 # Setup and Run
 @client.event
@@ -156,13 +167,7 @@ async def on_message(message):
             return # TODO
             await do_tests(message)
         if (message.content == "renew" or message.content == "reset"):
-            data = '{"login": "%s", "password": "%s"}' % (username, password)
-            response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
-            response = json.loads(response.text)
-            auth_token = response["auth_token"] # assume success
-            client.auth_token = auth_token
-            await communication.send(ctx, "Authentication renewed.")
-            return
+            await renew_auth(message)
     if message.content.startswith("/"):
         if "roll" in message.content or "lookup" in message.content: # FIXME
             await client.process_commands(message)
