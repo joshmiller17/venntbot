@@ -19,7 +19,7 @@ class Stats(commands.Cog):
         self.bot = bot  
 
     @commands.command(pass_context=True)
-    async def roll(self, ctx, *roll):
+    async def roll(self, ctx, *args):
         """Basic dice rolling parser. For flow, roll 4d6kh3 (roll 4, keep highest 3). Comments can go in brackets."""
         rollstr = "".join(args[:]) # remove spaces
         logger.log("roll", rollstr)
