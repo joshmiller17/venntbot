@@ -6,7 +6,7 @@
 **Usage**: `py -3 venntbot.py`
 
 
-### Style
+### Style (Stale - TODO update)
 
 - Globals are in ALL_CAPS and usually in the `db` module (for globals needed by multiple classes)
 - Internal functions deal in Entities, command functions deal in strings

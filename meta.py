@@ -8,56 +8,10 @@ import time, datetime, json, random, requests
 
 import importlib
 db = importlib.import_module("db")
-webscraper = importlib.import_module("webscraper")
-abilityClass = importlib.import_module("ability")
 communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("meta")
 
-TEST_SCRIPT_EASY = [
-        "$add_turn Bang 20", 
-        "$add_enemies 2 rat",
-        "$add_enemies 1 skeleton", 
-        "$next_turn",
-        "$gm_attack Bang skeleton heat_death     ",
-        "$undo                                   ",
-        "$gm_attack Bang skeleton heat_death     ",
-        "$gm_attack Bang rat heat_death +0 /2    ",
-        "$gm_spend Bang 1 Reaction               ",
-        "$end                                    ",
-        "$enemy_attack rat2 Bang                 ",
-        "$end                                    ",
-        "$end                                    ",
-        "$gm_attack Bang skeleton ratchet        ",
-        "$gm_spend Bang 2 hero                   ",
-        "$gm_modify Bang 2 Action                ",
-        "$gm_attack Bang rat2 ratchet            ",
-        "$end                                    "
-        ]
-
-TEST_SCRIPT_HARD = [
-        ">[aim]                                                                           ",
-        ">shoot [rat A] with [rifle]                                                      ",
-        ">I'll [move] away from the enemies                                               ",
-        ">then attack the [skeleton] with [crippling shot]                                ",
-        ">I end my turn                                                                   ",
-        ">I'll use [Instant Focus]                                                        ",
-        ">then attack [rat B] with the [rifle]                                            ",
-        ">I end my turn                                                                   ",
-        ">I'm going to [Aim]                                                              ",
-        ">then shoot the [skeleton] in the head with [disabling shot]                     ",
-        ">[TIL this song is more than the opening fanfare]                                "
-]
-
-
-START_TIME = time.time()
-
-def get_character_name(username):
-    for character in db.characters:
-        if character["played_by"] == str(username):
-            return character["name"]
-    logger.err("get_character_name", "no name found for " + str(username))
-    return ""
     
 def save_macros(macros):
     with open("macros.json", 'w') as f:
@@ -68,8 +22,7 @@ class Meta(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        
+           
         try:
             with open("macros.json") as f:
                 self.macros = json.load(f)
@@ -81,21 +34,6 @@ class Meta(commands.Cog):
     async def ping(self, ctx):
         """Pong!"""
         await communication.send(ctx,"Pong!")
-        
-    @commands.command(pass_context=True)
-    async def test_script(self, ctx, which, help="For debug only."):
-        altered = ctx.message
-        await communication.send(ctx,"Now running test fight.")
-        if which == "easy":
-            script = TEST_SCRIPT_EASY
-        else:
-            script = TEST_SCRIPT_HARD
-        for line in script:
-            altered.content = line
-            await communication.send(ctx,"`> " + line + "`")
-            await self.bot.on_message(altered)
-            time.sleep(2)
-        await communication.send(ctx,"Done.")
     
 
     @commands.command(pass_context=True, aliases=['setalias'])
@@ -195,14 +133,8 @@ class Meta(commands.Cog):
         """Get bot's lifespan"""
         await communication.send(ctx,"I've been up for " + str(datetime.timedelta(seconds = (time.time() - START_TIME))))
         
-    @commands.command(pass_context=True)
-    async def cost(self, ctx, *ability):
-        """Get an ability's cost."""
-        name = " ".join(ability[:])
-        ability = abilityClass.get_ability(name)
-        await communication.send(ctx,str(ability.readable_cost))
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, aliases=['whatis'])
     async def lookup(self, ctx, *query):
         """Get the info of an ability."""
         response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token," ".join(query[:])), verify=False)
@@ -221,25 +153,3 @@ class Meta(commands.Cog):
                 await communication.send(ctx, "```" + msg + "```")
             else:
                 await communication.send(ctx, "No ability found.")
-
-    @commands.command(pass_context=True)
-    async def whatis(self, ctx, *query):
-        """Get the info of a weapon or ability."""      
-        # Server API call instead
-        potential_weapon = query[0] # weapons can only be one string
-        data = {"auth_token":self.bot.auth_token,"name":"%s" % potential_weapon}
-        response = requests.get("https://topazgryphon.org:3004/" + 'get_weapon?q=%s' % json.dumps(data), verify=False)
-        
-        response = json.loads(response.text)
-        if not response["success"]:
-            data = {"auth_token":self.bot.auth_token,"name":"%s" % " ".join(query[:])}
-            response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?q=%s' % json.dumps(data), verify=False)
-            response = json.loads(response.text)
-            print(response)
-            if not response["success"]:
-                await communication.send(ctx, response["info"])
-            else:
-                await communication.send(ctx, response["value"])
-        else:
-            print(response)
-            await communication.send(ctx, json.dumps(response["value"]))

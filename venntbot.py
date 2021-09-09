@@ -10,14 +10,9 @@ from dotenv import load_dotenv
 import importlib
 db = importlib.import_module("db")
 meta = importlib.import_module("meta")
-combat = importlib.import_module("combat")
 sheets = importlib.import_module("sheets")
 stats = importlib.import_module("stats")
-enemyhandler = importlib.import_module("enemyhandler")
-initiative = importlib.import_module("initiative")
-gm = importlib.import_module("gm")
 communication = importlib.import_module("communication")
-webscraper = importlib.import_module("webscraper")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("venntbot")
 
@@ -180,10 +175,6 @@ client.description = "A bot to assist with running the Vennt RPG."
 client.add_cog(meta.Meta(client))
 client.add_cog(sheets.Sheets(client))
 client.add_cog(stats.Stats(client))
-client.add_cog(initiative.Initiative(client))
-client.add_cog(gm.GM(client)) # requires initiative
-client.add_cog(combat.Combat(client)) # requires GM
-client.add_cog(enemyhandler.EnemyHandler(client))
-client.add_cog(communication.Communication(client)) # requires initiative
+client.add_cog(communication.Communication(client))
 
 client.run(TOKEN)
