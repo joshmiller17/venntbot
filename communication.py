@@ -71,48 +71,6 @@ async def send_in_batches(ctx, msg_list):
         message_obj = await ctx.send(msg)
     CTX_TO_MSG[ctx] = message_obj
 
-async def suggest_quick_actions(ctx, entity):
-    global COMM_STATE
-    if entity is None:
-        return # No one's turn
-        
-    COMM_STATE = None
-        
-    available_actions = {"Basic attack" : db.SWORDS, "Move" : db.RUNNING, "End turn" : db.SKIP, "More" : db.MORE}
-    actions_left = entity.actions
-
-    # Repeat
-    their_last_action = act.get_last_action(user=entity)
-    if their_last_action is not None and their_last_action.type != act.ActionType.ATTACK:
-        abiObj = abilityClass.get_ability(their_last_action.description)
-        if entity.can_afford(abiObj.cost):
-            available_actions[their_last_action.description] = db.REPEAT
-    
-    if entity.primary_weapon is None:
-        available_actions.pop('Basic attack', None)
-    if actions_left < 2:
-        available_actions.pop('Basic attack', None)
-        if actions_left < 1:
-            available_actions.pop('Move', None)
-    ret = []
-    for action, emoji in available_actions.items():
-        ret.append("{0} {1}".format(emoji, action))
-    m = await send_and_return(ctx, "*(Quick actions: {0}.)*".format(", ".join(ret)))
-    for action, emoji in available_actions.items():
-        await m.add_reaction(emoji)
-    db.QUICK_ACTION_MESSAGE = m
-    db.QUICK_CTX = ctx
-
-async def suggest_quick_reactions(ctx, entity):
-    if entity is None:
-        return # No one's turn
-    
-    if entity.reactions < 1:
-        return
-    m = await send_and_return(ctx,"*(Quick reactions: {0} Dodge, {1} Block.)*".format(db.DASH, db.SHIELD))
-    await m.add_reaction(db.DASH)
-    await m.add_reaction(db.SHIELD)
-    db.QUICK_REACTION_MESSAGE = m
     
 async def make_choice_list(self, ctx, choices, offset):
     choice_map = {}

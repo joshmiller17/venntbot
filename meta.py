@@ -141,12 +141,7 @@ class Meta(commands.Cog):
         response = json.loads(response.text)
         print(response)
         if not response["success"]:
-            if response["info"] == "Authentication invalid":
-                await self.bot.renew_auth(None)
-                print("Authentication renewed!")
-                self.lookup(ctx, *query)
-            else:
-                await communication.send(ctx, response["info"])
+            await communication.send(ctx, response["info"])
         else:
             msg = "".join(response["value"])
             if msg:

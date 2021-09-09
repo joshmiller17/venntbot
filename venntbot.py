@@ -121,7 +121,6 @@ async def do_tests(message):
             time.sleep(1)
     await message.author.send("Done.")
     
-    
 async def renew_auth(message=None):
     data = '{"login": "%s", "password": "%s"}' % (username, password)
     response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
@@ -131,6 +130,11 @@ async def renew_auth(message=None):
     if message:
         ctx = await client.get_context(message)
         await communication.send(ctx, "Authentication renewed.")
+    await wait_and_renew_auth()
+    
+async def wait_and_renew_auth():
+    asyncio.sleep(3600)
+    renew_auth()
 
 # Setup and Run
 @client.event
@@ -164,11 +168,7 @@ async def on_message(message):
         if (message.content == "renew" or message.content == "reset"):
             await renew_auth(message)
     if message.content.startswith("/"):
-        if "roll" in message.content or "lookup" in message.content: # FIXME
-            await client.process_commands(message)
-        else:
-            ctx = await client.get_context(message)
-            await communication.send(ctx, "That command is temporarily unavailable. Only rolling is allowed.")
+        await client.process_commands(message)
         
 
 client.description = "A bot to assist with running the Vennt RPG."
