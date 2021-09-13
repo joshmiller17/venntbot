@@ -1,6 +1,6 @@
 # --- Josh Aaron Miller 2021
 # --- main run for Discord Vennt Bot
-import discord, os, sys, traceback, json, time, re, requests, urllib
+import discord, os, sys, traceback, json, time, re, requests, urllib, asyncio
 from pretty_help import PrettyHelp
 
 from discord.ext import commands
@@ -75,13 +75,14 @@ async def renew_auth(message=None):
     await wait_and_renew_auth()
     
 async def wait_and_renew_auth():
-    asyncio.sleep(3600)
-    renew_auth()
+    await asyncio.sleep(3600)
+    await renew_auth()
 
 # Setup and Run
 @client.event
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
+    await renew_auth()
     return
     
 @client.event
@@ -120,4 +121,3 @@ client.add_cog(stats.Stats(client))
 client.add_cog(communication.Communication(client))
 
 client.run(TOKEN)
-client.renew_auth()
