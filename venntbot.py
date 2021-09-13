@@ -120,3 +120,4 @@ client.add_cog(stats.Stats(client))
 client.add_cog(communication.Communication(client))
 
 client.run(TOKEN)
+client.renew_auth()
