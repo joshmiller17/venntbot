@@ -42,66 +42,6 @@ response = json.loads(response.text)
 auth_token = response["auth_token"] # assume success
 client.auth_token = auth_token
 
-
-
-async def parse(message):
-    logger.log("on_message", "Experimental parser activated: " + message.content)
-    matches = re.findall("\[[^\]]*\]|end my turn", message.content)
-    target = None
-    weapon = None
-    acc_mod = "+0"
-    dmg_mod = "+0"
-    cast_strength = None
-    initCog = client.get_cog('Initiative')
-    gm = client.get_cog('GM')
-    ctx = await client.get_context(message)
-    who = meta.get_character_name(ctx.message.author)
-    entity = db.find(who)
-    for match in matches:
-        match = match.replace('[', '')
-        match = match.replace(']', '')
-        logger.log("on_message", match)
-        ability_matches, URL = webscraper.find_ability(match)
-        if match.lower() == "end my turn":
-            await initCog.next_turn(ctx)
-        elif match in db.get_player_names():
-            who = match
-            entity = db.find(who)
-        elif match.lower() == "move" or match.lower() == "moves":
-            success = await entity.use_resources_verbose(ctx, {'A':1})
-            await communication.send(ctx,who + " moved.")
-        elif match in [e.display_name() for e in db.ENEMIES]:
-            target = match
-        elif db.get_weapon(match) is not None:
-            weapon = match
-        elif "cast" in match.lower():
-            if "half" in match.lower():
-                cast_strength = 0
-            elif "double" in match.lower():
-                cast_strength = 2
-            else:
-                cast_strength = 1
-        elif len(ability_matches) == 1:
-            if cast_strength is not None:
-                await gm.gm_cast(ctx, who, cast_strength, ability_matches[0])
-                cast_strength = None
-            else:
-                await gm.gm_use(ctx, who, ability_matches[0])
-        elif match.startswith('+') or match.startswith('-'):
-            mod = match.split(' ')
-            if mod[1].upper() == "ACC":
-                acc_mod = mod[0]
-            elif mod[1].upper() == "DMG":
-                dmg_mod = mod[0]
-        else:
-            await communication.send(ctx,"Sorry, I don't understand [" + match + "]")
-    if target is not None and weapon is not None:
-        await gm.gm_attack(ctx, who, target, weapon, acc_mod, dmg_mod)
-        target = None
-        weapon = None
-        acc_mod = "+0"
-        dmg_mod = "+0"
-
 async def do_quit(message):
     await message.author.send("Goodbye.")
     logger.log("on_message", "Goodbye")
@@ -122,8 +62,10 @@ async def do_tests(message):
     await message.author.send("Done.")
     
 async def renew_auth(message=None):
+    logger.log("renew_auth", "renewing")
     data = '{"login": "%s", "password": "%s"}' % (username, password)
     response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
+    logger.log("renew_auth", response.text)
     response = json.loads(response.text)
     auth_token = response["auth_token"] # assume success
     client.auth_token = auth_token
