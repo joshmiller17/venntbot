@@ -72,11 +72,11 @@ async def renew_auth(message=None):
     if message:
         ctx = await client.get_context(message)
         await communication.send(ctx, "Authentication renewed.")
-    await wait_and_renew_auth()
-    
-async def wait_and_renew_auth():
-    await asyncio.sleep(3600)
-    await renew_auth()
+    while True:
+        await asyncio.sleep(3600)
+        await renew_auth()
+        
+        
 
 # Setup and Run
 @client.event
@@ -98,6 +98,8 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_message(message):
     if message.author == client.user:
+        if message.content == "Authentication invalid":
+            await renew_auth(message)
         return # don't respond to ourselves
     if message.content.startswith('>'):
         return # TODO
