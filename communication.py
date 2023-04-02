@@ -17,27 +17,18 @@ OK = '👍'
 NOT_OK = '🚫' #'👎'
 ACCEPT = '✅'
 DECLINE = '❌'
-SHIELD = '🛡'
-DASH = '💨'
-SWORDS = '⚔️'
-RUNNING = '🏃'
+#SHIELD = '🛡' DASH = '💨' SWORDS = '⚔️' RUNNING = '🏃'
 SKIP = '⏭️'
 REPEAT = '🔁'
 THINKING = '🤔'
 NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
 MORE = '➡️'
-SCROLL = '📜'
-FAST = '⚡'
-MAGIC = '🪄'
-POWERFUL = '💪'
+#SCROLL = '📜' FAST = '⚡' MAGIC = '🪄' POWERFUL = '💪'
 COOL = '😎' # '🆒'
 CUT = '✂️'
-
-ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
+#ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
 
     
-COMM_STATE = None
-ABILITY_LIST_CACHE = None
 SECONDS_PER_MSG_BATCH = 1
 COMM_BOT = None
 CTX_TO_MSG = {} # ctx : message obj
@@ -116,7 +107,6 @@ async def make_choice_list(self, ctx, choices, offset):
         await m.add_reaction(db.NUMBERS[i])
     if has_more:
         await m.add_reaction(db.MORE)
-    db.QUICK_ACTION_MESSAGE = m
 
 
 class Communication(commands.Cog):
@@ -127,11 +117,6 @@ class Communication(commands.Cog):
         global COMM_BOT
         self.bot = bot
         COMM_BOT = self
-        self.enemy_list_offset = 0
-        self.ability_list_offset = 0
-        self.chosen_ability = None # stored for convenience
-        self.initCog = self.bot.get_cog('Initiative')
-        self.gm = self.bot.get_cog('GM')
         self.message_queue = {} # ctx : msgs
         self.scheduler = None
         
@@ -157,15 +142,9 @@ class Communication(commands.Cog):
             if reaction.me:
                 await reaction.remove(self.bot.user)
                 await self.remove_bot_reactions(message) # refresh list and try again
-                
-    @commands.command(pass_context=True)
-    async def quick(self, ctx):
-        """Show available quick actions."""
-        await suggest_quick_actions(ctx, db.find(self.initCog.whose_turn))
     
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        global COMM_STATE, ABILITY_LIST_CACHE
         if user == self.bot.user:
             return
         #if reaction.message == QUICK_ACTION_MESSAGE:

@@ -14,12 +14,22 @@ communication = importlib.import_module("communication")
 
 # Discord setup
 load_dotenv()
+intents = discord.Intents.default()
+intents.members = True
+intents.messages = True
+intents.reactions = True
 TOKEN = os.getenv('DISCORD_TOKEN')
-client = commands.Bot(command_prefix=("$","/", "!"), help_command=PrettyHelp())
+client = commands.Bot(command_prefix=("$","/", "!"), help_command=PrettyHelp(), intents=intents)
 
 # Authenticate with Vennt Server API
-SERVER_URL = "https://topazgryphon.org:3004/"
-#SERVER_URL = "http://localhost:3004/"
+#SERVER_URL = "https://topazgryphon.org:3004/"
+SERVER_URL = "http://localhost:3004/"
+
+GUILD_ID = 383650516225228801
+VOTING_CHANNEL = 'secret'
+
+BALLOT = []
+BALLOT_INDEX = 0
 
 with open("api_credentials.json") as f:
     vennt_creds = json.load(f)
@@ -38,10 +48,26 @@ response = json.loads(response.text)
 auth_token = response["auth_token"] # assume success
 client.auth_token = auth_token
 
+# load ability voting
+with open('ballot.txt', 'r') as file:
+    file_contents = file.read()
+    BALLOT = file_contents.split("\r\n\r\n")
+    print('Loaded %d abilities' % len(BALLOT))
+    
+
 async def do_quit(message):
     await message.author.send("Goodbye.")
     logger.log("on_message", "Goodbye")
     await client.close()
+    
+async def ability_vote_loop():
+    # TODO post question to voting channel
+    # TODO post initial reactions; use communication.make_choice_list
+    # TODO on reaction, count it for the right message and right person
+    # TODO command to show players' stats on voting
+    # TODO command to order abilities by positive - negative votes (name and vote counts only)
+    await asyncio.sleep(60) #test
+    await ability_vote_loop()
     
 async def renew_auth(message=None):
     logger.log("renew_auth", "renewing")
@@ -54,15 +80,26 @@ async def renew_auth(message=None):
     if message:
         ctx = await client.get_context(message)
         await communication.send(ctx, "Authentication renewed.")
-    while True:
-        await asyncio.sleep(3600)
-        await renew_auth()
+    #while True:
+    await asyncio.sleep(3600)
+    await renew_auth()
         
 # Setup and Run
 @client.event
 async def on_ready():
+    global GUILD_ID, VOTING_CHANNEL
+    
     print(f'{client.user} has connected to Discord!')
     await renew_auth()
+    
+    # Search for the voting channel by name
+    channel = discord.utils.get(client.get_all_channels(), guild__id=GUILD_ID, name=VOTING_CHANNEL)
+    if channel is not None:
+        # Post the message to the channel
+        VOTING_CHANNEL = channel
+        await VOTING_CHANNEL.send('Hello, world!')
+    else:
+        print(f'Channel {VOTING_CHANNEL} not found on server {GUILD_ID}')
     return
     
 @client.event
@@ -95,7 +132,7 @@ async def on_message(message):
 
 @commands.command(pass_context=True)
 async def version(self, ctx, *query):        
-    
+    await communication.send(ctx, "Bot version: 0.14.0\nAbility cache: v. 0.13.7")
 
 @commands.command(pass_context=True, aliases=['whatis'])
 async def lookup(self, ctx, *query):
