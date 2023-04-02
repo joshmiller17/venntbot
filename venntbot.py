@@ -22,11 +22,11 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 client = commands.Bot(command_prefix=("$","/", "!"), help_command=PrettyHelp(), intents=intents)
 
 # Authenticate with Vennt Server API
-#SERVER_URL = "https://topazgryphon.org:3004/"
-SERVER_URL = "http://localhost:3004/"
+SERVER_URL = "https://topazgryphon.org:3004/"
+#SERVER_URL = "http://localhost:3004/"
 
 GUILD_ID = 383650516225228801
-VOTING_CHANNEL = 'secret'
+VOTING_CHANNEL = 'bot-testing'
 
 BALLOT = []
 BALLOT_INDEX = 0
@@ -37,8 +37,8 @@ with open("api_credentials.json") as f:
 # register if need be
 username = vennt_creds["username"]
 password = vennt_creds["password"]
-data = '{"register": "%s", "password": "%s"}' % (username, password)
-response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
+#data = '{"register": "%s", "password": "%s"}' % (username, password)
+#response = requests.post(SERVER_URL, data=data.encode('utf-8'), verify=False)
 
 # login
 data = '{"login": "%s", "password": "%s"}' % (username, password)
@@ -90,6 +90,7 @@ async def on_ready():
     global GUILD_ID, VOTING_CHANNEL
     
     print(f'{client.user} has connected to Discord!')
+    await client.add_cog(communication.Communication(client))
     await renew_auth()
     
     # Search for the voting channel by name
@@ -152,6 +153,5 @@ async def lookup(self, ctx, *query):
 
 
 client.description = "A bot to assist with running the Vennt RPG."
-client.add_cog(communication.Communication(client))
 
 client.run(TOKEN)
