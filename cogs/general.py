@@ -25,7 +25,7 @@ class General(commands.Cog, name="general"):
         self.bot = bot
 
     @commands.hybrid_command(
-        name="help", description="List all commands the bot has loaded."
+        name="help", description="List all commands the bot has loaded.",
     )
     @checks.not_blacklisted()
     @app_commands.guilds(discord.Object(id=GUILD_ID))

@@ -13,6 +13,7 @@ from discord.ext.commands import Context
 
 from helpers import checks, db_manager
 
+GUILD_ID = 383650516225228801
 
 class Owner(commands.Cog, name="owner"):
     def __init__(self, bot):
@@ -24,6 +25,7 @@ class Owner(commands.Cog, name="owner"):
     )
     @app_commands.describe(scope="The scope of the sync. Can be `global` or `guild`")
     @checks.is_owner()
+    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def sync(self, context: Context, scope: str) -> None:
         """
         Synchonizes the slash commands.
