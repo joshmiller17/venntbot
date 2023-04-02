@@ -17,6 +17,8 @@ from discord.ext.commands import Context
 
 from helpers import checks
 
+GUILD_ID = 383650516225228801
+
 
 class General(commands.Cog, name="general"):
     def __init__(self, bot):

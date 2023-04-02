@@ -131,7 +131,6 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 bot.logger = logger
 
-GUILD_ID = 383650516225228801
 
 async def init_db():
     async with aiosqlite.connect(
