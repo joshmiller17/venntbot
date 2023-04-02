@@ -6,13 +6,31 @@ from pretty_help import PrettyHelp
 from discord.ext import commands
 from dotenv import load_dotenv
 
+# Emojis
+OK = '👍'
+NOT_OK = '🚫' #'👎'
+ACCEPT = '✅'
+DECLINE = '❌'
+SHIELD = '🛡'
+DASH = '💨'
+SWORDS = '⚔️'
+RUNNING = '🏃'
+SKIP = '⏭️'
+REPEAT = '🔁'
+THINKING = '🤔'
+NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+MORE = '➡️'
+SCROLL = '📜'
+FAST = '⚡'
+MAGIC = '🪄'
+POWERFUL = '💪'
+COOL = '😎' # '🆒'
+CUT = '✂️'
+
+ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
+
 # Other files
 import importlib
-db = importlib.import_module("db")
-meta = importlib.import_module("meta")
-sheets = importlib.import_module("sheets")
-stats = importlib.import_module("stats")
-communication = importlib.import_module("communication")
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("venntbot")
 
@@ -47,20 +65,6 @@ async def do_quit(message):
     logger.log("on_message", "Goodbye")
     await client.close()
     
-async def do_tests(message):
-    await message.author.send("Running all tests:")
-    altered = message
-    with open("tests.json") as f:
-        tests = json.load(f)
-    for module in tests:
-        await message.author.send("**{0}**".format(module["name"]))
-        for cmd in module["cmds"]:
-            altered.content = cmd
-            await message.author.send("`> " + cmd + "`")
-            await client.on_message(altered)
-            time.sleep(1)
-    await message.author.send("Done.")
-    
 async def renew_auth(message=None):
     logger.log("renew_auth", "renewing")
     data = '{"login": "%s", "password": "%s"}' % (username, password)
@@ -76,8 +80,6 @@ async def renew_auth(message=None):
         await asyncio.sleep(3600)
         await renew_auth()
         
-        
-
 # Setup and Run
 @client.event
 async def on_ready():
@@ -107,19 +109,29 @@ async def on_message(message):
     if isinstance(message.channel, discord.channel.DMChannel):
         if (message.content == "quit"):
             await do_quit(message)
-        if (message.content == "test"):
-            return # TODO
-            await do_tests(message)
         if (message.content == "renew" or message.content == "reset"):
             await renew_auth(message)
     if message.content.startswith("/"):
         await client.process_commands(message)
         
 
+@commands.command(pass_context=True, aliases=['whatis'])
+async def lookup(self, ctx, *query):
+    """Get the info of an ability."""
+    response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token," ".join(query[:])), verify=False)
+    response = json.loads(response.text)
+    print(response)
+    if not response["success"]:
+        await communication.send(ctx, response["info"])
+    else:
+        msg = "".join(response["value"])
+        if msg:
+            await communication.send(ctx, "```" + msg + "```")
+        else:
+            await communication.send(ctx, "No ability found.")
+
+
 client.description = "A bot to assist with running the Vennt RPG."
-client.add_cog(meta.Meta(client))
-client.add_cog(sheets.Sheets(client))
-client.add_cog(stats.Stats(client))
-client.add_cog(communication.Communication(client))
+#client.add_cog(meta.Meta(client))
 
 client.run(TOKEN)
