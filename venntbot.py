@@ -118,6 +118,7 @@ async def on_message(message):
 @commands.command(pass_context=True, aliases=['whatis'])
 async def lookup(self, ctx, *query):
     """Get the info of an ability."""
+    renew_auth() # make sure we're logged in
     response = requests.get("https://topazgryphon.org:3004/" + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token," ".join(query[:])), verify=False)
     response = json.loads(response.text)
     print(response)
