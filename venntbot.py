@@ -6,33 +6,11 @@ from pretty_help import PrettyHelp
 from discord.ext import commands
 from dotenv import load_dotenv
 
-# Emojis
-OK = '👍'
-NOT_OK = '🚫' #'👎'
-ACCEPT = '✅'
-DECLINE = '❌'
-SHIELD = '🛡'
-DASH = '💨'
-SWORDS = '⚔️'
-RUNNING = '🏃'
-SKIP = '⏭️'
-REPEAT = '🔁'
-THINKING = '🤔'
-NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
-MORE = '➡️'
-SCROLL = '📜'
-FAST = '⚡'
-MAGIC = '🪄'
-POWERFUL = '💪'
-COOL = '😎' # '🆒'
-CUT = '✂️'
-
-ATTRS = ["AGI", "CHA", "DEX", "INT", "PER", "SPI", "STR", "TEK", "WIS"]
-
 # Other files
 import importlib
 logClass = importlib.import_module("logger")
 logger = logClass.Logger("venntbot")
+communication = importlib.import_module("communication")
 
 # Discord setup
 load_dotenv()
@@ -113,7 +91,11 @@ async def on_message(message):
             await renew_auth(message)
     if message.content.startswith("/"):
         await client.process_commands(message)
-        
+
+
+@commands.command(pass_context=True)
+async def version(self, ctx, *query):        
+    
 
 @commands.command(pass_context=True, aliases=['whatis'])
 async def lookup(self, ctx, *query):
@@ -133,6 +115,6 @@ async def lookup(self, ctx, *query):
 
 
 client.description = "A bot to assist with running the Vennt RPG."
-#client.add_cog(meta.Meta(client))
+client.add_cog(communication.Communication(client))
 
 client.run(TOKEN)
