@@ -1,6 +1,7 @@
 # --- Josh Aaron Miller 2021
 # --- main run for Discord Vennt Bot
 import discord, os, sys, traceback, json, time, traceback, re, requests, urllib, asyncio, d20, random, interactions
+import constants
 from collections import defaultdict
 from enum import Enum
 from dotenv import load_dotenv

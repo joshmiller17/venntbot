@@ -6,15 +6,8 @@ Description:
 Version: 5.5.0
 """
 
-import asyncio
-import json
-import logging
-import os
-import platform
-import random
-import sys
-
-import aiosqlite
+import asyncio, json, logging, os, platform, random, sys, aiosqlite, requests
+import constants
 import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
@@ -143,6 +136,38 @@ async def init_db():
         await db.commit()
 
 
+
+
+
+with open("api_credentials.json") as f:
+    vennt_creds = json.load(f)
+
+username = vennt_creds["username"]
+password = vennt_creds["password"]
+
+# login
+data = '{"login": "%s", "password": "%s"}' % (username, password)
+response = requests.post(constants.SERVER_URL, data=data.encode('utf-8'), verify=False)
+response = json.loads(response.text)
+auth_token = response["auth_token"] # assume success
+bot.auth_token = auth_token
+
+
+async def renew_auth_once():
+    bot.logger.info("Renewing authentication")
+    data = '{"login": "%s", "password": "%s"}' % (username, password)
+    response = requests.post(constants.SERVER_URL, data=data.encode('utf-8'), verify=False)
+    bot.logger.info(response.text)
+    response = json.loads(response.text)
+    auth_token = response["auth_token"] # assume success
+    bot.auth_token = auth_token
+
+
+async def renew_auth():
+    while True:
+        await renew_auth_once()
+        await asyncio.sleep(3600)
+
 """
 Create a bot variable to access the config file in cogs so that you don't need to import it every time.
 
@@ -167,6 +192,7 @@ async def on_ready() -> None:
     if config["sync_commands_globally"]:
         bot.logger.info("Syncing commands globally...")
         await bot.tree.sync()
+    await asyncio.create_task(renew_auth())
 
 
 @tasks.loop(minutes=1.0)
@@ -287,6 +313,24 @@ async def on_command_error(context: Context, error) -> None:
     else:
         raise error
 
+
+    @bot.event
+    async def on_reaction_add(reaction, user):
+        if user == bot.user:
+            return
+        if reaction.message in general.ballot_messages:
+            if reaction.emoji == constants.COOL:
+                general.ballot_messages[reaction.message][constants.COOL].append(user)
+                if user in general.ballot_messages[reaction.message][constants.CUT]:
+                    general.ballot_messages[reaction.message][constants.CUT].remove(user)
+                    await reaction.message.remove_reaction(constants.CUT, user)
+            if reaction.emoji == constants.CUT:
+                general.ballot_messages[reaction.message][constants.CUT].append(user)
+                if user in general.ballot_messages[reaction.message][constants.COOL]:
+                    general.ballot_messages[reaction.message][constants.COOL].remove(user)
+                    await reaction.message.remove_reaction(constants.COOL, user)
+            with open("vote_results.txt", "w") as file:
+                file.write(get_vote_results())
 
 async def load_cogs() -> None:
     """
