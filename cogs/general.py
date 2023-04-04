@@ -33,7 +33,8 @@ class General(commands.Cog, name="general"):
 
     def save(self):
         with open('ballot_msg.pkl', 'wb') as file:
-            pickle.dump(self.ballot_messages, file)
+            ballot_msgs = self.ballot_messages
+            pickle.dump(ballot_msgs, file)
         
     def load(self):
         with open('ballot_msg.pkl', 'rb') as file:
