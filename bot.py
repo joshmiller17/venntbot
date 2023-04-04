@@ -9,8 +9,11 @@ Version: 5.5.0
 import asyncio, json, logging, os, platform, random, sys, aiosqlite, requests
 import constants
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
+
+from helpers import checks
 
 import exceptions
 
@@ -155,7 +158,8 @@ auth_token = response["auth_token"] # assume success
 bot.auth_token = auth_token
 
 
-async def renew_auth_once():
+@tasks.loop(minutes=60.0)
+async def renew_auth():
     bot.logger.info("Renewing authentication")
     data = '{"login": "%s", "password": "%s"}' % (username, password)
     response = requests.post(constants.SERVER_URL, data=data.encode('utf-8'), verify=False)
@@ -164,11 +168,6 @@ async def renew_auth_once():
     auth_token = response["auth_token"] # assume success
     bot.auth_token = auth_token
 
-
-async def renew_auth():
-    while True:
-        await renew_auth_once()
-        await asyncio.sleep(3600)
 
 """
 Create a bot variable to access the config file in cogs so that you don't need to import it every time.
@@ -190,6 +189,7 @@ async def on_ready() -> None:
     bot.logger.info(f"Python version: {platform.python_version()}")
     bot.logger.info(f"Running on: {platform.system()} {platform.release()} ({os.name})")
     bot.logger.info("-------------------")
+    renew_auth.start()
     status_task.start()
     if config["sync_commands_globally"]:
         bot.logger.info("Syncing commands globally...")
@@ -313,6 +313,7 @@ async def on_command_error(context: Context, error) -> None:
         await context.send(embed=embed)
     else:
         raise error
+        
 
 async def load_cogs() -> None:
     global general

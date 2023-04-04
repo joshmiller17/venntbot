@@ -1,4 +1,4 @@
-import platform, random, requests, aiohttp, asyncio
+import platform, random, requests, aiohttp, asyncio, json
 import constants
 import discord
 from discord import app_commands
@@ -231,47 +231,6 @@ class General(commands.Cog, name="general"):
         await context.send(self.get_vote_results())
 
 
-    @commands.hybrid_command(
-        name="lookup",
-        description="Query the Vennt wiki for an ability.",
-    )
-    @app_commands.describe(
-        query="The ability name or partial match to search for"
-    )
-    @checks.not_blacklisted()
-    @app_commands.describe(query="The ability name to query.")
-    @app_commands.guilds(discord.Object(id=constants.GUILD_ID))
-    async def lookup(self, context: Context, query: str) -> None:
-        """
-        Get the info of an ability.
-
-        :param context: The hybrid command context.
-        :param query: The ability name to look up.
-        """
-        
-        renew_auth_once() # make sure we're logged in
-        # This will prevent your bot from stopping everything when doing a web request - see: https://discordpy.readthedocs.io/en/stable/faq.html#how-do-i-make-a-web-request
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                constants.SERVER_URL + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token, query)
-            ) as request:
-                if request.status == 200:
-                    data = await request.json(
-                        content_type="application/javascript"
-                    )  # For some reason the returned content is of type JavaScript
-                    response = json.loads(data)
-                    self.bot.logger.info(data)
-                    self.bot.logger.info(response)
-                    if not response["success"]:
-                        await context.send(response["info"])
-                    else:
-                        msg = "".join(response["value"])
-                        if msg:
-                            await context.send("```" + msg + "```")
-                        else:
-                            await context.send(f'I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
-                
-                
     def get_vote_results(self):
         results_points = {}
         results_str = {}
@@ -306,6 +265,39 @@ class General(commands.Cog, name="general"):
             response += f'{user} has {abs(cool - cut)} point{"s" if abs(cool - cut) == 1 else ""}! ({cool} {constants.COOL}, {cut} {constants.CUT})'
         
         return response
+
+
+    @commands.hybrid_command(
+            name="lookup",
+            description="Query the Vennt wiki for an ability.",)
+    @checks.not_blacklisted()
+    @app_commands.describe(query="The ability name or partial match to search for")
+    @app_commands.describe(query="The ability name to query.")
+    @app_commands.guilds(discord.Object(id=constants.GUILD_ID))
+    async def lookup(self, context: Context, query: str) -> None:
+        """
+        Get the info of an ability.
+
+        :param context: The hybrid command context.
+        :param query: The ability name to look up.
+        """
+        
+        # This will prevent your bot from stopping everything when doing a web request - see: https://discordpy.readthedocs.io/en/stable/faq.html#how-do-i-make-a-web-request
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                constants.SERVER_URL + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token, query)
+            ) as request:
+                if request.status == 200:
+                    response = await request.json(content_type="text/html")
+                    self.bot.logger.info(response)
+                    if not response["success"]:
+                        await context.send(f'`[{response["info"]}]` I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
+                    else:
+                        msg = "".join(response["value"])
+                        if msg:
+                            await context.send("```\n" + msg + "```")
+                        else:
+                            await context.send(f'I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
 
 
 # And then we finally add the cog to the bot so that it can load, unload, reload and use it's content.
