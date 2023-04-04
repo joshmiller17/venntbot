@@ -16,6 +16,8 @@ class General(commands.Cog, name="general"):
         self.ballot_messages = {} # message : {up: [people], down: [people]}
         self.ballot = []
         self.ballot_index = 0
+        self.botversion = "0.14.0"
+        self.abilityversion = "0.13.7"
         
         # load ability voting
         with open('ballot.txt', 'r') as file:
@@ -197,7 +199,7 @@ class General(commands.Cog, name="general"):
 
         :param context: The hybrid command context.
         """
-        await context.send("Bot version: 0.14.0\nAbility cache: v. 0.13.7")
+        await context.send(f'Bot version: {self.botversion}\nAbility cache: v. {self.abilityversion}')
         
     @commands.hybrid_command(
         name="leaderboard",
@@ -267,7 +269,7 @@ class General(commands.Cog, name="general"):
                         if msg:
                             await context.send("```" + msg + "```")
                         else:
-                            await context.send("No ability found.")
+                            await context.send(f'I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
                 
                 
     def get_vote_results(self):
