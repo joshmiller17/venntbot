@@ -34,14 +34,10 @@ class General(commands.Cog, name="general"):
     def save(self):
         with open('ballot_msg.pkl', 'wb') as file:
             pickle.dump(self.ballot_messages, file)
-        with open('index.pkl', 'wb') as file:
-            pickle.dump(self.ballot_index, file)
         
     def load(self):
         with open('ballot_msg.pkl', 'rb') as file:
             self.ballot_messages = pickle.load(file)
-        with open('index.pkl', 'rb') as file:
-            self.ballot_index = pickle.load(file)
 
     @commands.hybrid_command(
         name="help", description="List all commands the bot has loaded.",
@@ -190,9 +186,6 @@ class General(commands.Cog, name="general"):
     )
     async def vote(self, context: Context) -> None:
         self.bot.logger.info("Ability vote")
-        if self.ballot_index == 0:
-            await context.send(f'Welcome to Cool or Cut! The channel for voting on new abilities. For each ability, you decide whether we keep it {constants.COOL} or cut it {constants.CUT}! Everyone will get special rewards at the end based on how many times they used their less-frequent vote. So if you vote 7 {constants.COOL} and 4 {constants.CUT}, you will get 4 points toward the special rewards! Have fun!')
-            await asyncio.sleep(15) #test
         
         if self.ballot_index >= len(self.ballot):
             await context.send("That's it for Cool or Cut! Time to tally the votes!")
