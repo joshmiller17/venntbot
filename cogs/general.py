@@ -1,6 +1,5 @@
 import platform, random, requests, aiohttp, asyncio
 import constants
-import pickle
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -18,11 +17,6 @@ class General(commands.Cog, name="general"):
         self.ballot = []
         self.ballot_index = 0
         
-        try:
-            self.load()
-        except FileNotFoundError:
-            pass
-        
         # load ability voting
         with open('ballot.txt', 'r') as file:
             file_contents = file.read()
@@ -30,18 +24,6 @@ class General(commands.Cog, name="general"):
             bot.logger.info('Loaded %d abilities' % len(self.ballot))
         random.seed(42)
         random.shuffle(self.ballot) # random but ordered
-
-    def save(self):
-        with open('ballot_msg.pkl', 'wb') as file:
-            # make copy
-            ballot_msgs = {}
-            for key, val in self.ballot_messages.items():
-                ballot_msgs[key] = val
-            pickle.dump(ballot_msgs, file)
-        
-    def load(self):
-        with open('ballot_msg.pkl', 'rb') as file:
-            self.ballot_messages = pickle.load(file)
 
     @commands.hybrid_command(
         name="help", description="List all commands the bot has loaded.",
@@ -176,7 +158,6 @@ class General(commands.Cog, name="general"):
                 if user in self.ballot_messages[reaction.message][constants.COOL]:
                     self.ballot_messages[reaction.message][constants.COOL].remove(user)
                     await reaction.message.remove_reaction(constants.COOL, user)
-            self.save()
             with open("vote_results.txt", "w") as file:
                 file.write(self.get_vote_results())
     
@@ -202,7 +183,6 @@ class General(commands.Cog, name="general"):
         await asyncio.sleep(0.5)
         await message.add_reaction(constants.CUT)
         self.ballot_messages[message] = {constants.COOL: [], constants.CUT: []}
-        self.save()
         
         
     @commands.hybrid_command(
