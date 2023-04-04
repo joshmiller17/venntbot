@@ -33,7 +33,10 @@ class General(commands.Cog, name="general"):
 
     def save(self):
         with open('ballot_msg.pkl', 'wb') as file:
-            ballot_msgs = self.ballot_messages
+            # make copy
+            ballot_msgs = {}
+            for key, val in self.ballot_messages.items():
+                ballot_msgs[key] = val
             pickle.dump(ballot_msgs, file)
         
     def load(self):
