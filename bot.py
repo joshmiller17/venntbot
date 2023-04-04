@@ -72,6 +72,8 @@ bot = Bot(
     help_command=None,
 )
 
+general = None
+
 # Setup both of the loggers
 
 
@@ -192,10 +194,9 @@ async def on_ready() -> None:
     if config["sync_commands_globally"]:
         bot.logger.info("Syncing commands globally...")
         await bot.tree.sync()
-    await asyncio.create_task(renew_auth())
 
 
-@tasks.loop(minutes=1.0)
+@tasks.loop(minutes=60.0)
 async def status_task() -> None:
     """
     Setup the game status task of the bot.
@@ -313,26 +314,8 @@ async def on_command_error(context: Context, error) -> None:
     else:
         raise error
 
-
-    @bot.event
-    async def on_reaction_add(reaction, user):
-        if user == bot.user:
-            return
-        if reaction.message in general.ballot_messages:
-            if reaction.emoji == constants.COOL:
-                general.ballot_messages[reaction.message][constants.COOL].append(user)
-                if user in general.ballot_messages[reaction.message][constants.CUT]:
-                    general.ballot_messages[reaction.message][constants.CUT].remove(user)
-                    await reaction.message.remove_reaction(constants.CUT, user)
-            if reaction.emoji == constants.CUT:
-                general.ballot_messages[reaction.message][constants.CUT].append(user)
-                if user in general.ballot_messages[reaction.message][constants.COOL]:
-                    general.ballot_messages[reaction.message][constants.COOL].remove(user)
-                    await reaction.message.remove_reaction(constants.COOL, user)
-            with open("vote_results.txt", "w") as file:
-                file.write(get_vote_results())
-
 async def load_cogs() -> None:
+    global general
     """
     The code in this function is executed whenever the bot will start.
     """
@@ -341,10 +324,10 @@ async def load_cogs() -> None:
             extension = file[:-3]
             try:
                 await bot.load_extension(f"cogs.{extension}")
-                bot.logger.info(f"Loaded extension '{extension}'")
+                bot.logger.info(f"loaded extension '{extension}'")
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
-                bot.logger.error(f"Failed to load extension {extension}\n{exception}")
+                bot.logger.error(f"failed to load extension {extension}\n{exception}")
 
 
 asyncio.run(init_db())
