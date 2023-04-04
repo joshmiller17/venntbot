@@ -1,5 +1,6 @@
 import platform, random, requests, aiohttp, asyncio
 import constants
+import pickle
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -16,12 +17,31 @@ class General(commands.Cog, name="general"):
         self.ballot_messages = {} # message : {up: [people], down: [people]}
         self.ballot = []
         self.ballot_index = 0
+        
+        try:
+            self.load()
+        except FileNotFoundError:
+            pass
+        
         # load ability voting
         with open('ballot.txt', 'r') as file:
             file_contents = file.read()
             self.ballot = file_contents.split("\n\n")
             bot.logger.info('Loaded %d abilities' % len(self.ballot))
+        random.seed(42)
+        random.shuffle(self.ballot) # random but ordered
 
+    def save(self):
+        with open('ballot_msg.pkl', 'wb') as file:
+            pickle.dump(self.ballot_messages, file)
+        with open('index.pkl', 'wb') as file:
+            pickle.dump(self.ballot_index, file)
+        
+    def load(self):
+        with open('ballot_msg.pkl', 'rb') as file:
+            self.ballot_messages = pickle.load(file)
+        with open('index.pkl', 'rb') as file:
+            self.ballot_index = pickle.load(file)
 
     @commands.hybrid_command(
         name="help", description="List all commands the bot has loaded.",
@@ -156,6 +176,7 @@ class General(commands.Cog, name="general"):
                 if user in self.ballot_messages[reaction.message][constants.COOL]:
                     self.ballot_messages[reaction.message][constants.COOL].remove(user)
                     await reaction.message.remove_reaction(constants.COOL, user)
+            self.save()
             with open("vote_results.txt", "w") as file:
                 file.write(self.get_vote_results())
     
@@ -171,20 +192,20 @@ class General(commands.Cog, name="general"):
         self.bot.logger.info("Ability vote")
         if self.ballot_index == 0:
             await context.send(f'Welcome to Cool or Cut! The channel for voting on new abilities. For each ability, you decide whether we keep it {constants.COOL} or cut it {constants.CUT}! Everyone will get special rewards at the end based on how many times they used their less-frequent vote. So if you vote 7 {constants.COOL} and 4 {constants.CUT}, you will get 4 points toward the special rewards! Have fun!')
-            await asyncio.sleep(5) #test
+            await asyncio.sleep(15) #test
         
         if self.ballot_index >= len(self.ballot):
             await context.send("That's it for Cool or Cut! Time to tally the votes!")
             return
             
-        message = await context.send(f'**Cool or Cut #{self.ballot_index + 1}**\n What do you think of this ability?\n```' + self.ballot[self.ballot_index] + '```')
+        message = await context.send(f'**Cool or Cut #{self.ballot_index + 1}**\n What do you think of this ability? Remember to vote on the concept rather than specific details, this ability may be re-balanced during implementation.\n```' + self.ballot[self.ballot_index] + '```')
         self.ballot_index += 1
         await asyncio.sleep(0.5)
         await message.add_reaction(constants.COOL)
         await asyncio.sleep(0.5)
         await message.add_reaction(constants.CUT)
         self.ballot_messages[message] = {constants.COOL: [], constants.CUT: []}
-        
+        self.save()
         
         
     @commands.hybrid_command(
@@ -277,7 +298,7 @@ class General(commands.Cog, name="general"):
         results_str = {}
         for msg in self.ballot_messages:
             content = msg.content
-            ability_name = content.split('\n')[2]
+            ability_name = content.split('\n')[1]
             cool = len(self.ballot_messages[msg][constants.COOL])
             cut = len(self.ballot_messages[msg][constants.CUT])
             results_points[ability_name] = cool - cut
