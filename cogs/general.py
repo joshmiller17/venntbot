@@ -6,15 +6,14 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Context
 from collections import defaultdict
 
-from helpers import checks
-
+from helpers import checks, db_manager
 
 # Here we name the cog and create a new class for the cog.
 class General(commands.Cog, name="general"):
     def __init__(self, bot):
         self.bot = bot
-        self.ballot_messages = {} # message : {up: [people], down: [people]}
         self.ballot = []
+        self.ballot_items = []
         self.ballot_index = 0
         self.botversion = "0.14.0"
         self.abilityversion = "0.13.7"
@@ -23,6 +22,9 @@ class General(commands.Cog, name="general"):
         with open('ballot.txt', 'r') as file:
             file_contents = file.read()
             self.ballot = file_contents.split("\n\n")
+            for item in self.ballot:
+                self.ballot_items.append(item.split("\n")[0])
+                print(self.ballot_items)
             bot.logger.info('Loaded %d abilities' % len(self.ballot))
         random.seed(42)
         random.shuffle(self.ballot) # random but ordered
@@ -149,17 +151,21 @@ class General(commands.Cog, name="general"):
     async def on_reaction_add(self, reaction, user):
         if user == self.bot.user:
             return
-        if reaction.message in self.ballot_messages:
-            if reaction.emoji == constants.COOL:
-                self.ballot_messages[reaction.message][constants.COOL].append(user)
-                if user in self.ballot_messages[reaction.message][constants.CUT]:
-                    self.ballot_messages[reaction.message][constants.CUT].remove(user)
-                    await reaction.message.remove_reaction(constants.CUT, user)
-            if reaction.emoji == constants.CUT:
-                self.ballot_messages[reaction.message][constants.CUT].append(user)
-                if user in self.ballot_messages[reaction.message][constants.COOL]:
-                    self.ballot_messages[reaction.message][constants.COOL].remove(user)
-                    await reaction.message.remove_reaction(constants.COOL, user)
+            
+        # TODO instead of ballot...  total = await db_manager.remove_warn(warn_id, user.id, context.guild.id)
+
+        votable_name = db_manager.votable_name(reaction.message.id)
+        vote = 0
+        if reaction.emoji == constants.COOL:
+            vote = 1
+        if reaction.emoji == constants.CUT:
+            vote = -1
+        if votable_name:
+            original_vote = db.manager.set_vote(user.name, votable_name, vote)
+            if original_vote == 1 and original_vote != vote:
+                await reaction.message.remove_reaction(constants.COOL, user)
+            if original_vote == -1  and original_vote != vote:
+                await reaction.message.remove_reaction(constants.CUT, user)
             with open("vote_results.txt", "w") as file:
                 file.write(self.get_vote_results())
     
@@ -184,7 +190,14 @@ class General(commands.Cog, name="general"):
         await message.add_reaction(constants.COOL)
         await asyncio.sleep(0.5)
         await message.add_reaction(constants.CUT)
-        self.ballot_messages[message] = {constants.COOL: [], constants.CUT: []}
+        
+        query = self.ballot[self.ballot_index-1].split('\n')[0].strip()
+        if await self.has_lookup(query):
+            await context.send(f'**Warning!** Version {self.abilityversion} of Vennt has an ability of the same name:\n')
+            await self.lookup(context, query)
+        
+        await db_manager.add_ability(message.id, query)
+        
         
         
     @commands.hybrid_command(
@@ -267,6 +280,18 @@ class General(commands.Cog, name="general"):
         return response
 
 
+    async def has_lookup(self, query):
+        # This will prevent your bot from stopping everything when doing a web request - see: https://discordpy.readthedocs.io/en/stable/faq.html#how-do-i-make-a-web-request
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                constants.SERVER_URL + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token, query)
+            ) as request:
+                if request.status == 200:
+                    response = await request.json(content_type="text/html")
+                    return response["success"] and response["value"] != ''
+            return False
+
+
     @commands.hybrid_command(
             name="lookup",
             description="Query the Vennt wiki for an ability.",)
@@ -289,7 +314,7 @@ class General(commands.Cog, name="general"):
             ) as request:
                 if request.status == 200:
                     response = await request.json(content_type="text/html")
-                    self.bot.logger.info(response)
+                    self.bot.logger.info("Lookup:" + str(response))
                     if not response["success"]:
                         await context.send(f'`[{response["info"]}]` I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
                     else:
@@ -297,7 +322,7 @@ class General(commands.Cog, name="general"):
                         if msg:
                             await context.send("```\n" + msg + "```")
                         else:
-                            await context.send(f'I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
+                            await context.send(f'`No such ability` I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
 
 
 # And then we finally add the cog to the bot so that it can load, unload, reload and use it's content.

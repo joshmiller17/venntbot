@@ -103,7 +103,37 @@ async def add_warn(user_id: int, server_id: int, moderator_id: int, reason: str)
             )
             await db.commit()
             return warn_id
+            
+async def add_ability(message_id: int, ability_name: str) -> None:
+    cur = await db.execute("SELECT * FROM messages WHERE ability_name = ?", (ability_name,))
+    existing = await cur.fetchone()
+    if existing:
+        await db.execute("UPDATE messages SET message_id = ? WHERE ability_name = ?", (message_id, ability_name))
+    else:
+        await db.execute("INSERT INTO messages (message_id, ability_name) VALUES (?, ?)", (message_id, ability_name))
+    await db.commit()
+    
 
+async def votable_name(message_id: int) -> str:
+    cursor = await db.execute("SELECT ability_name FROM messages WHERE message_id = ?", (message_id,))
+    row = await cursor.fetchone()
+    return row
+
+
+async def set_vote(user_id: str, message_id: int, value: int) -> int:
+    cur = await db.execute("SELECT value FROM votes WHERE user_id = ? AND message_id = ?", (user_id, message_id))
+    existing_row = await cur.fetchone()
+    if existing_row:
+        # Update the existing row
+        await db.execute("UPDATE votes SET value = ? WHERE user_id = ? AND message_id = ?", (value, user_id, message))
+        await db.commit()
+        return existing_row
+    else:
+        # Insert a new row
+        await db.execute("INSERT INTO votes (user_id, message_id, value) VALUES (?, ?, ?)", (user_id, message_id, value))
+    # Commit the changes
+    await db.commit()
+    return 0
 
 async def remove_warn(warn_id: int, user_id: int, server_id: int) -> int:
     """
