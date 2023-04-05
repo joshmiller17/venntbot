@@ -1,0 +1,168 @@
+Tinker's Pet
+From: Path of the Engineer
+This ability is not required for the Path Completion Bonus.
+Cost: 200 XP
+Prerequisite: Gift of Craft
+You've built a mechanical creature that you keep with you.
+You have an automaton construct with 5+Technology Summon Points. See the Appendix for Summoning rules. A construct does not need to eat, breathe, or sleep.
+
+Calm the Waters
+From: Path of the Magician
+Cost: 200 XP
+Expedited (Magic): 150 XP
+Activation: 1 Reaction, 1 VP
+You dispel the sense of urgency, soothing those around you.
+This ability is usable when conversing with someone while under a Time Pressure. Gain Flow 2 for the next Charisma or Wisdom check you make as part of this conversation. Additionally, if you earn Heroic Creativity or Legendary Roleplaying while using this ability, the creature's Attitude increases one step (for example from Hostile to Wary or from Neutral to Friendly).
+
+Resolute Coordination
+From: Path of the Soldier
+Cost: 200 XP
+Expedited (Charm): 150 XP
+When an ally attacks an enemy that you previously attacked this turn, they don't need to make attack rolls.
+
+Bottle Thrower
+From: Path of the Blue
+Cost: 200 XP
+Expedited (Mind): 150 XP
+Expedited (Science): 150 XP
+Activation: Respite
+You like to make curious liquids and throw them at people.
+During a Respite, you can craft one of the following potions. Each potion weighs 1 Bulk. All potions expire at the end of the Act and lose their potency, becoming useless. These potions can be thrown as a Grenade. These Grenades have no Blast Zone (only affects the target square).
+Bottle of Weak Acid - this Grenade deals 1d6 burn damage.
+Bottle of Weakening Poison - this Grenade reduces any damage the target deals by 1.
+Bottle of Drymouth Poison - this Grenade causes the target to take a -3 penalty to all casting rolls.
+
+Good Fortune
+Cost: 400 XP
+Expedited for: Charm
+Activation: Passive
+When you roll to loot, all Luck bonuses are doubled. Then add 3 to the result.
+
+True Resurrection
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Path Completion of Path of the Thaumaturgy Arcana, Course of Wounds, Course of Flux, True Restoration
+Cost: 1000 XP
+Expedited for: Magic
+MP Cost: [ 20 / 30 / 45 ]
+Casting DL: [ 18 / 24 / 27 ]
+Activation: [ Intermission / Rest / Respite ]
+Range: Touch
+You resurrect a dead or undead creature.
+On a successful cast, you bring the target back to life with [ one quarter / half / all ] of their maximum health. This spell can't work if the target has been dead or undead for more than [ a day / a week / a month ], or if their soul can't return to their body, or if they don't want to return. If brought back successfully, they have [ 2 / 1 / 0 ] Grievous Wounds extant from the ones which killed them. On a failed cast, you resurrect their corpse as a hostile undead creature that has no soul or sentience. Additionally, this hostile undead creature gains a number of Levels equal to your Spirit. Regardless of the spell's success, this creature can no longer be brought back to life and they gain the Tide "I Should Be Dead." Finally, when you successfully resurrect another player character, you immediately gain 6 Hero Points and your Hero Point capacity is increased by 3.
+
+Health Insurance
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Course of Wounds, Course of Flux, Gift of Charm
+Cost: 400 XP
+Activation: Intermission
+Money talks, and it asks the clerics for the gift of life.
+Between Quests, you may pay 500 sp for you or an ally to remove all Grievous Wounds and gain the Tide "Healed by the Clerics." This ability cannot be used if the target already has this Tide.
+
+Poison Hex
+Prerequisite: Enervate (Necromancy Arcana)
+Cost: 600 XP
+Expedited for: Magic
+Activation: [ 3 Actions / 2 Actions / 2 Actions ]
+MP Cost: [ 6 / 6 / 66 ]
+Casting DL: [ 11 / 15 / 20 ]
+Range: [ Touch / 3 meters / 12 meters ]
+You curse one target within range and line of sight. If the target fails a Strength vs. Spellpower check, they take SPI attribute damage to their Strength.
+
+Citrus Concentrate
+Prerequisite: Airship (Home Improver)
+Cost: 400 XP
+Expedited for: Charm, Science
+"Cures scurvy, cleans your teeth, and will kill anyone with an open wound in their mouth."
+Activation: 1 Reaction
+Remove CHA or WIS (whichever is higher) attribute damage on yourself or an adjacent ally. This ability is usable once per Rest.
+
+Rapid Fire Assault
+Cost: 400 XP
+Expedited for: Finesse
+Activation: 2 Actions, X Vim up to DEX
+Make X ranged attacks, using the same damage roll for all of them. Each attack deals 6 less damage than it normally would (min. 1).
+
+Suppressive Fire
+Cost: 400 XP
+Expedited for: Finesse
+Activation: 1 Action, X Vim up to DEX
+Choose 3X contiguous hexes within sight. All creatures in those hexes lose X Vim.
+
+Ricochet Shot
+Cost: 400 XP
+Expedited for: Finesse, Alertness
+Activation: Attack, 4 Vim
+This ranged attack bounces off walls, objects, and creatures. Choose one effect:
+The attack targets up to DEX targets within sight, using the same damage roll. Every subsequent attack after the first deals half the damage of the previous attack.
+The attack may target a hex that you don't have line of sight to if you have line of sight to a location that would be able to target that hex (such as around a corner)
+
+Brought the Boom
+Prerequisite: Course of Combat
+Unlocks: Path of the Grenadier
+Cost: 400 XP
+Expedited for: Finesse
+Activation: Passive
+Once per Rest, you may acquire any standard Grenade worth up to 50sp as a Free Action as if you had brought it with you.
+
+Blunderbuster 
+Cost: 400 XP
+Expedited for: Finesse
+Activation: 2 Actions
+Once per Encounter, you may shoot the Blunderbuster, which counts as both a Rifle and Shotgun weapon for all purposes and deals their base damages combined.
+
+Snub-nosed Revolver
+Cost: 400 XP
+Expedited for: Finesse
+Activation: 2 Actions
+Once per Encounter, you may shoot the Snub-nosed Revolver, which is a Sidearm weapon with a range of 3 meters. This weapon deals 1d6 extra damage and and either knocks the target prone or pushes them backwards DEX meters, your choice.
+
+Overstuffed Barrel
+Cost: 400 XP
+Expedited for: Finesse
+Activation: 2 Actions, 3 Vim
+Make an attack with any Sidearm, Rifle, or Shotgun weapon. The attack's range is reduced to 6 meters, but the shot deals an additional 2d6 burn damage.
+
+Anti-Tank Rounds
+Cost: 400 XP
+Expedited for: Finesse
+Activation: Attack, 1 Reaction, 5 Vim
+This attack ignores all Armor.
+
+Ice Blast
+Unlocks: Path of the Ice Arcana
+Cost: 300 XP
+Expedited for: Magic
+MP Cost: [ 0 / 1 / 2 ]
+Activation: 2 Actions
+You attack with a shot of freezing magical energy.
+This spell always succeeds and does not use a casting roll. This is considered an Arcane weapon basic attack. Ice Blast deals [ 0 / 1d6 / 2d6 ] damage and [ 2d6 / 4d6 / 6d6 ] Vim damage.
+
+Rock Blast
+Unlocks: Path of the Earth Arcana
+Cost: 300 XP
+Expedited for: Magic
+MP Cost: [ 0 / 1 / 2 ]
+Activation: 2 Actions
+You conjure a rock and launch it at your target with concussive force.
+This spell always succeeds and does not use a casting roll. This is considered an Arcane weapon basic attack. Rock Blast deals [ 0 / 1d6 / 3d6 ] damage. When you are standing on dirt, sand, or stone, this attack deals an additional 1d6 damage and cannot be Evaded.
+
+Singe 
+Unlocks: Path of the Fire Arcana
+Cost: 300 XP
+Expedited for: Magic
+MP Cost: [ 0 / 1 / 3 ]
+Casting DL: [ 9 / 13 / 16 ]
+Activation: 2 Actions
+Range: Touch
+Your fingertips burn like a lighter. This creates dim light in a [ 3 / 6 / 15 ] meter radius while maintained as a Reaction. This spell can also burn flammable objects. The flame can be used for precision cutting on objects such as doors and walls, dealing [ 1 / 2 / 3 ] damage per Round and ignoring [ 3 / 6 / 12 ] Armor of the object. This damage can be used against a creature as an Arcane weapon basic attack.
+
+Wind Hand
+Unlocks: Path of the Air Arcana
+Cost: 300 XP
+Expedited for: Magic
+MP Cost: [ 0 / 1 / 2 ]
+Casting DL: [ 9 / 13 / 16 ]
+Activation: 1 Action
+Range: [ 12 / 30 / 100 ] meters
+"It's either a poltergeist or the wind mage's school let out early today."
+You pull objects with the wind. You move an object of [ 0 / 1 / 5 ] Bulk or less from any point in range to any other point in range. If this object is propelled toward an enemy, this is an Arcane weapon basic attack that deals [ 1 / 1d6 / 2d6 ] + Spirit damage.

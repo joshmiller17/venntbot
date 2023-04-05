@@ -1,4 +1,4 @@
-import platform, random, requests, aiohttp, asyncio, json
+import platform, random, requests, aiohttp, asyncio, json, os
 import constants
 import discord
 from discord import app_commands
@@ -14,7 +14,11 @@ class General(commands.Cog, name="general"):
         self.bot = bot
         self.ballot = []
         self.ballot_items = []
-        self.ballot_index = 0
+        self.count = 1 # see count.txt
+        if os.path.exists('count.txt'):
+            with open('count.txt', 'r') as file:
+                self.count = int(file.read().strip())
+        self.ballot_index = 1
         self.botversion = "0.14.0"
         self.abilityversion = "0.13.7"
         
@@ -24,10 +28,10 @@ class General(commands.Cog, name="general"):
             self.ballot = file_contents.split("\n\n")
             for item in self.ballot:
                 self.ballot_items.append(item.split("\n")[0])
-                print(self.ballot_items)
             bot.logger.info('Loaded %d abilities' % len(self.ballot))
         random.seed(42)
         random.shuffle(self.ballot) # random but ordered
+
 
     @commands.hybrid_command(
         name="help", description="List all commands the bot has loaded.",
@@ -152,22 +156,19 @@ class General(commands.Cog, name="general"):
         if user == self.bot.user:
             return
             
-        # TODO instead of ballot...  total = await db_manager.remove_warn(warn_id, user.id, context.guild.id)
-
-        votable_name = db_manager.votable_name(reaction.message.id)
+        votable_name = await db_manager.votable_name(reaction.message.id)
         vote = 0
         if reaction.emoji == constants.COOL:
             vote = 1
         if reaction.emoji == constants.CUT:
             vote = -1
         if votable_name:
-            original_vote = db.manager.set_vote(user.name, votable_name, vote)
+            original_vote = await db_manager.set_vote(user.name, votable_name, vote)
+            self.bot.logger.info(f'{user.name} set vote {votable_name} from {original_vote} to {vote}')
             if original_vote == 1 and original_vote != vote:
                 await reaction.message.remove_reaction(constants.COOL, user)
             if original_vote == -1  and original_vote != vote:
                 await reaction.message.remove_reaction(constants.CUT, user)
-            with open("vote_results.txt", "w") as file:
-                file.write(self.get_vote_results())
     
 
     #@tasks.loop(minutes=1.0)
@@ -184,8 +185,11 @@ class General(commands.Cog, name="general"):
             await context.send("That's it for Cool or Cut! Time to tally the votes!")
             return
             
-        message = await context.send(f'**Cool or Cut #{self.ballot_index + 1}**\n What do you think of this ability? Remember to vote on the concept rather than specific details, this ability may be re-balanced during implementation.\n```' + self.ballot[self.ballot_index] + '```')
+        message = await context.send(f'**Cool or Cut #{self.count}**\n What do you think of this ability? Remember to vote on the concept rather than specific details, this ability may be re-balanced during implementation.\n```' + self.ballot[self.ballot_index] + '```')
         self.ballot_index += 1
+        self.count += 1
+        with open("count.txt", 'w') as f:
+            f.write(str(self.count))
         await asyncio.sleep(0.5)
         await message.add_reaction(constants.COOL)
         await asyncio.sleep(0.5)
@@ -226,7 +230,7 @@ class General(commands.Cog, name="general"):
 
         :param context: The hybrid command context.
         """
-        await context.send(self.get_leaderboard())
+        await context.send(await self.get_leaderboard())
         
         
     @commands.hybrid_command(
@@ -241,42 +245,32 @@ class General(commands.Cog, name="general"):
 
         :param context: The hybrid command context.
         """
-        await context.send(self.get_vote_results())
+        await context.send(await self.get_vote_results())
 
-
-    def get_vote_results(self):
-        results_points = {}
-        results_str = {}
-        for msg in self.ballot_messages:
-            content = msg.content
-            ability_name = content.split('\n')[1]
-            cool = len(self.ballot_messages[msg][constants.COOL])
-            cut = len(self.ballot_messages[msg][constants.CUT])
-            results_points[ability_name] = cool - cut
-            results_str[ability_name] = f'{ability_name}: {cool - cut} (+{cool}, -{cut})'
+    async def get_vote_results(self) -> str:
+        vote_dict = await db_manager.get_votes()
+        
+        key_vals = {}
+        for key, val in vote_dict.items():
+            key_vals[key] = val['cool'] - val['cut'] 
+        ordered_ability_names = dict(sorted(key_vals.items(), key = lambda x: x[1], reverse = True)).keys()
         
         response = "The votes are in!:\n"
-        sorted_results = dict(sorted(results_points.items(), key=lambda x: x[1], reverse=True))
-        for key, val in sorted_results.items():
-            response += results_str[key] + "\n"
+        for key in ordered_ability_names:
+            response += f'{key}: **{vote_dict[key]["cool"] - vote_dict[key]["cut"]}**   (+{vote_dict[key]["cool"]}, -{vote_dict[key]["cut"]})' + "\n"
         return response
 
-    def get_leaderboard(self):
-        cools = defaultdict(int)
-        cuts = defaultdict(int)
-        for msg in self.ballot_messages:
-            for user in self.ballot_messages[msg][constants.COOL]:
-                cools[user] += 1
-            for user in self.ballot_messages[msg][constants.CUT]:
-                cuts[user] += 1
+    async def get_leaderboard(self) -> str:
+        vote_dict = await db_manager.get_leaderboard()
         
+        key_vals = {}
+        for key, val in vote_dict.items():
+            key_vals[key] = min(val['cool'], val['cut'])
+        ordered_players = dict(sorted(key_vals.items(), key = lambda x: x[1], reverse = True)).keys()
         response = "Leaderboard:\n"
-        all_users = list(cools.keys()) + list(cuts.keys())
-        for user in all_users:
-            cool = cools[user]
-            cut = cuts[user]
-            response += f'{user} has {abs(cool - cut)} point{"s" if abs(cool - cut) == 1 else ""}! ({cool} {constants.COOL}, {cut} {constants.CUT})'
-        
+        for key in ordered_players:
+            points = min(vote_dict[key]["cool"], vote_dict[key]["cut"])
+            response += f'{key}: {points} point{"" if points == 1 else "s"} ({vote_dict[key]["cool"]} {constants.COOL}, {vote_dict[key]["cut"]} {constants.CUT})' + "\n"
         return response
 
 
