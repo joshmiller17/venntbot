@@ -192,6 +192,7 @@ class General(commands.Cog, name="general"):
     async def manual_vote(self, context: Context, user: str, ability: str, vote: int) -> None:
         original_vote = await db_manager.set_vote(user, ability, vote)
         self.bot.logger.info(f'{user} set vote {ability} from {original_vote} to {vote}')
+        await context.send(f'{user} set vote {ability} from {original_vote} to {vote}')
 
 
 
