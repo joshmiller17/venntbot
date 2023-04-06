@@ -18,7 +18,7 @@ class General(commands.Cog, name="general"):
         if os.path.exists('count.txt'):
             with open('count.txt', 'r') as file:
                 self.count = int(file.read().strip())
-        self.ballot_index = 1
+        self.ballot_index = self.count - 1
         self.botversion = "0.14.0"
         self.abilityversion = "0.13.7"
         
