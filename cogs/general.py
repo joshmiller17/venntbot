@@ -191,7 +191,7 @@ class General(commands.Cog, name="general"):
     @app_commands.describe(user="Username", ability="Ability name", vote="1 for Cool or -1 for Cut")
     async def manual_vote(self, context: Context, user: str, ability: str, vote: int) -> None:
         original_vote = await db_manager.set_vote(user, ability, vote)
-        self.bot.logger.info(f'{user} set vote {votable_name} from {original_vote} to {vote}')
+        self.bot.logger.info(f'{user} set vote {ability} from {original_vote} to {vote}')
 
 
 
