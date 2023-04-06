@@ -18,7 +18,7 @@ class General(commands.Cog, name="general"):
         if os.path.exists('count.txt'):
             with open('count.txt', 'r') as file:
                 self.count = int(file.read().strip())
-        self.ballot_index = self.count - 1
+        self.ballot_index = self.count - 1 # TODO change when count is updated
         self.botversion = "0.14.0"
         self.abilityversion = "0.13.7"
         
@@ -181,6 +181,19 @@ class General(commands.Cog, name="general"):
             if original_vote == -1  and original_vote != vote:
                 await reaction.message.remove_reaction(constants.CUT, user)
     
+    
+    @checks.not_blacklisted()
+    @app_commands.guilds(discord.Object(id=constants.GUILD_ID))
+    @commands.hybrid_command(
+        name="manual_vote",
+        description="Manually set someone's vote.",
+    )
+    @app_commands.describe(user="Username", ability="Ability name", vote="1 for Cool or -1 for Cut")
+    async def manual_vote(self, context: Context, user: str, ability: str, vote: int) -> None:
+        original_vote = await db_manager.set_vote(user, ability, vote)
+        self.bot.logger.info(f'{user} set vote {votable_name} from {original_vote} to {vote}')
+
+
 
     #@tasks.loop(minutes=1.0)
     @checks.not_blacklisted()
@@ -302,7 +315,6 @@ class General(commands.Cog, name="general"):
             description="Query the Vennt wiki for an ability.",)
     @checks.not_blacklisted()
     @app_commands.describe(query="The ability name or partial match to search for")
-    @app_commands.describe(query="The ability name to query.")
     @app_commands.guilds(discord.Object(id=constants.GUILD_ID))
     async def lookup(self, context: Context, query: str) -> None:
         """
