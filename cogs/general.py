@@ -295,7 +295,7 @@ class General(commands.Cog, name="general"):
         response = "Leaderboard:\n"
         for key in ordered_players:
             points = min(vote_dict[key]["cool"], vote_dict[key]["cut"])
-            response += f'{key}: {points} point{"" if points == 1 else "s"} ({vote_dict[key]["cool"]} {constants.COOL}, {vote_dict[key]["cut"]} {constants.CUT})' + "\n"
+            response += f'{key}: **{points}** point{"" if points == 1 else "s"} ({vote_dict[key]["cool"]} / {vote_dict[key]["cut"]})' + "\n"
         return response
 
 
