@@ -150,6 +150,17 @@ class General(commands.Cog, name="general"):
         await context.send(embed=embed)
 
 
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        if user == self.bot.user:
+            return
+            
+        votable_name = await db_manager.votable_name(reaction.message.id)
+        vote = 0
+        if reaction.emoji == constants.COOL or reaction.emoji == constants.CUT:
+            if votable_name:
+                original_vote = await db_manager.set_vote(user.name, votable_name, vote)
+                self.bot.logger.info(f'{user.name} set vote {votable_name} from {original_vote} to {vote}')
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):

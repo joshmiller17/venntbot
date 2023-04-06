@@ -119,7 +119,8 @@ async def votable_name(message_id: int) -> str:
     async with aiosqlite.connect(DATABASE_PATH) as db:
         cursor = await db.execute("SELECT ability_name FROM messages WHERE message_id = ?", (message_id,))
         row = await cursor.fetchone()
-        return row[0]
+        return row[0] if result is not None else 0
+
 
 async def get_votes() -> dict:
     async with aiosqlite.connect(DATABASE_PATH) as db:
@@ -145,8 +146,8 @@ async def get_leaderboard() -> dict:
 async def set_vote(user_id: str, ability_name: str, value: int) -> int:
     async with aiosqlite.connect(DATABASE_PATH) as db:
         cur = await db.execute("SELECT value FROM votes WHERE user_id = ? AND ability_name = ?", (user_id, ability_name))
-        existing_row = cur.fetchone()
-        if existing_row:
+        existing_row = await cur.fetchone()
+        if existing_row is not None:
             # Update the existing row
             await db.execute("UPDATE votes SET value = ? WHERE user_id = ? AND ability_name = ?", (value, user_id, ability_name))
             await db.commit()
