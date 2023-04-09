@@ -18,7 +18,7 @@ class General(commands.Cog, name="general"):
         if os.path.exists('count.txt'):
             with open('count.txt', 'r') as file:
                 self.count = int(file.read().strip())
-        self.ballot_index = self.count - 1 # TODO change when count is updated
+        self.ballot_index = 0 # Set to count - 1 when reset
         self.botversion = "0.14.0"
         self.abilityversion = "0.13.7"
         
@@ -29,8 +29,8 @@ class General(commands.Cog, name="general"):
             for item in self.ballot:
                 self.ballot_items.append(item.split("\n")[0])
             bot.logger.info('Loaded %d abilities' % len(self.ballot))
-        random.seed(42)
-        random.shuffle(self.ballot) # random but ordered
+        #random.seed(42)
+        #random.shuffle(self.ballot) # random but ordered
 
 
     @commands.hybrid_command(

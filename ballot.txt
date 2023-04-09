@@ -1,62 +1,14 @@
-Tinker's Pet
+Amnesia Capsule
+Consumable, 10sp
+When thrown (up to 12 meters away), this capsule enshrouds the target hex and adjacent hexes with a mind-altering toxin. Stealth Cogs in the affected area of effect immediately lose all Attention. All creatures in the affected area must succeed a DL 15 Intelligence check or lose what was previously in their short-term memory (forgetting, briefly, what they were doing).
+
+Tinker’s Pet
 From: Path of the Engineer
 This ability is not required for the Path Completion Bonus.
 Cost: 200 XP
 Prerequisite: Gift of Craft
-You've built a mechanical creature that you keep with you.
+You’ve built a mechanical creature that you keep with you.
 You have an automaton construct with 5+Technology Summon Points. See the Appendix for Summoning rules. A construct does not need to eat, breathe, or sleep.
-
-Calm the Waters
-From: Path of the Magician
-Cost: 200 XP
-Expedited (Magic): 150 XP
-Activation: 1 Reaction, 1 VP
-You dispel the sense of urgency, soothing those around you.
-This ability is usable when conversing with someone while under a Time Pressure. Gain Flow 2 for the next Charisma or Wisdom check you make as part of this conversation. Additionally, if you earn Heroic Creativity or Legendary Roleplaying while using this ability, the creature's Attitude increases one step (for example from Hostile to Wary or from Neutral to Friendly).
-
-Resolute Coordination
-From: Path of the Soldier
-Cost: 200 XP
-Expedited (Charm): 150 XP
-When an ally attacks an enemy that you previously attacked this turn, they don't need to make attack rolls.
-
-Bottle Thrower
-From: Path of the Blue
-Cost: 200 XP
-Expedited (Mind): 150 XP
-Expedited (Science): 150 XP
-Activation: Respite
-You like to make curious liquids and throw them at people.
-During a Respite, you can craft one of the following potions. Each potion weighs 1 Bulk. All potions expire at the end of the Act and lose their potency, becoming useless. These potions can be thrown as a Grenade. These Grenades have no Blast Zone (only affects the target square).
-Bottle of Weak Acid - this Grenade deals 1d6 burn damage.
-Bottle of Weakening Poison - this Grenade reduces any damage the target deals by 1.
-Bottle of Drymouth Poison - this Grenade causes the target to take a -3 penalty to all casting rolls.
-
-Good Fortune
-Cost: 400 XP
-Expedited for: Charm
-Activation: Passive
-When you roll to loot, all Luck bonuses are doubled. Then add 3 to the result.
-
-True Resurrection
-This ability is not required for the Path Completion Bonus.
-Prerequisites: Path Completion of Path of the Thaumaturgy Arcana, Course of Wounds, Course of Flux, True Restoration
-Cost: 1000 XP
-Expedited for: Magic
-MP Cost: [ 20 / 30 / 45 ]
-Casting DL: [ 18 / 24 / 27 ]
-Activation: [ Intermission / Rest / Respite ]
-Range: Touch
-You resurrect a dead or undead creature.
-On a successful cast, you bring the target back to life with [ one quarter / half / all ] of their maximum health. This spell can't work if the target has been dead or undead for more than [ a day / a week / a month ], or if their soul can't return to their body, or if they don't want to return. If brought back successfully, they have [ 2 / 1 / 0 ] Grievous Wounds extant from the ones which killed them. On a failed cast, you resurrect their corpse as a hostile undead creature that has no soul or sentience. Additionally, this hostile undead creature gains a number of Levels equal to your Spirit. Regardless of the spell's success, this creature can no longer be brought back to life and they gain the Tide "I Should Be Dead." Finally, when you successfully resurrect another player character, you immediately gain 6 Hero Points and your Hero Point capacity is increased by 3.
-
-Health Insurance
-This ability is not required for the Path Completion Bonus.
-Prerequisites: Course of Wounds, Course of Flux, Gift of Charm
-Cost: 400 XP
-Activation: Intermission
-Money talks, and it asks the clerics for the gift of life.
-Between Quests, you may pay 500 sp for you or an ally to remove all Grievous Wounds and gain the Tide "Healed by the Clerics." This ability cannot be used if the target already has this Tide.
 
 Poison Hex
 Prerequisite: Enervate (Necromancy Arcana)
@@ -76,26 +28,6 @@ Expedited for: Charm, Science
 Activation: 1 Reaction
 Remove CHA or WIS (whichever is higher) attribute damage on yourself or an adjacent ally. This ability is usable once per Rest.
 
-Rapid Fire Assault
-Cost: 400 XP
-Expedited for: Finesse
-Activation: 2 Actions, X Vim up to DEX
-Make X ranged attacks, using the same damage roll for all of them. Each attack deals 6 less damage than it normally would (min. 1).
-
-Suppressive Fire
-Cost: 400 XP
-Expedited for: Finesse
-Activation: 1 Action, X Vim up to DEX
-Choose 3X contiguous hexes within sight. All creatures in those hexes lose X Vim.
-
-Ricochet Shot
-Cost: 400 XP
-Expedited for: Finesse, Alertness
-Activation: Attack, 4 Vim
-This ranged attack bounces off walls, objects, and creatures. Choose one effect:
-The attack targets up to DEX targets within sight, using the same damage roll. Every subsequent attack after the first deals half the damage of the previous attack.
-The attack may target a hex that you don't have line of sight to if you have line of sight to a location that would be able to target that hex (such as around a corner)
-
 Brought the Boom
 Prerequisite: Course of Combat
 Unlocks: Path of the Grenadier
@@ -103,39 +35,6 @@ Cost: 400 XP
 Expedited for: Finesse
 Activation: Passive
 Once per Rest, you may acquire any standard Grenade worth up to 50sp as a Free Action as if you had brought it with you.
-
-Blunderbuster 
-Cost: 400 XP
-Expedited for: Finesse
-Activation: 2 Actions
-Once per Encounter, you may shoot the Blunderbuster, which counts as both a Rifle and Shotgun weapon for all purposes and deals their base damages combined.
-
-Snub-nosed Revolver
-Cost: 400 XP
-Expedited for: Finesse
-Activation: 2 Actions
-Once per Encounter, you may shoot the Snub-nosed Revolver, which is a Sidearm weapon with a range of 3 meters. This weapon deals 1d6 extra damage and and either knocks the target prone or pushes them backwards DEX meters, your choice.
-
-Overstuffed Barrel
-Cost: 400 XP
-Expedited for: Finesse
-Activation: 2 Actions, 3 Vim
-Make an attack with any Sidearm, Rifle, or Shotgun weapon. The attack's range is reduced to 6 meters, but the shot deals an additional 2d6 burn damage.
-
-Anti-Tank Rounds
-Cost: 400 XP
-Expedited for: Finesse
-Activation: Attack, 1 Reaction, 5 Vim
-This attack ignores all Armor.
-
-Ice Blast
-Unlocks: Path of the Ice Arcana
-Cost: 300 XP
-Expedited for: Magic
-MP Cost: [ 0 / 1 / 2 ]
-Activation: 2 Actions
-You attack with a shot of freezing magical energy.
-This spell always succeeds and does not use a casting roll. This is considered an Arcane weapon basic attack. Ice Blast deals [ 0 / 1d6 / 2d6 ] damage and [ 2d6 / 4d6 / 6d6 ] Vim damage.
 
 Rock Blast
 Unlocks: Path of the Earth Arcana
@@ -146,15 +45,56 @@ Activation: 2 Actions
 You conjure a rock and launch it at your target with concussive force.
 This spell always succeeds and does not use a casting roll. This is considered an Arcane weapon basic attack. Rock Blast deals [ 0 / 1d6 / 3d6 ] damage. When you are standing on dirt, sand, or stone, this attack deals an additional 1d6 damage and cannot be Evaded.
 
-Singe 
-Unlocks: Path of the Fire Arcana
+Smoke Capsule
+Consumable, 3sp
+When thrown (up to 12 meters away), this capsule enshrouds the target hex and adjacent hexes with a brief smoke. Creatures in the affected area of effect are blinded while they are in the smoke. The smoke dissipates at the start of your next turn.
+
+Lunge and Recover
+Cost: 400 XP
+Expedited for: Finesse
+Activation: Attack, 2 Vim
+You lunge before your attack and recover to your original footing after the attack.
+This ability is usable when making a melee attack. Before you attack, move one hex. After your attack, move back to the hex you started in.
+
+Forge Onward!
+Unlocks: Path of the Blacksmith
+Cost: 200 XP
+Expedited for: Craft, Rage
+Activation: Passive
+You are trained in crafting your own parts from raw metals. The practice has increased your endurance with a hammer.
+When you attack with a melee weapon that uses Strength as its attribute, you gain +3 to damage rolls.
+
+Steel Heart
+Cost: 200 XP
+Expedited for: Rage, Charm
+When dealing with emotional creatures, you gain Flow on Charisma checks.
+
+Leaning Rocket
+Expedited for: Craft
+DC: 3
+This rocket is ammunition for the Rocket Launcher. The rocket is heat-sensitive, gaining 5 * WIS Accuracy. Upon impact, it deals 2d6 damage + 2d6 burn damage to the target and 1d6 burn damage to all adjacent hexes.
+
+Enduring Acrobat
+Cost: 300 XP
+Expedited for: Alacrity
+Activation: Passive
+Gain +6 maximum Vim.
+
+Shadow Bolt
+Unlocks: Path of the Shadow Arcana
 Cost: 300 XP
 Expedited for: Magic
-MP Cost: [ 0 / 1 / 3 ]
-Casting DL: [ 9 / 13 / 16 ]
+MP Cost: [ 0 / 1 / 2 ]
 Activation: 2 Actions
-Range: Touch
-Your fingertips burn like a lighter. This creates dim light in a [ 3 / 6 / 15 ] meter radius while maintained as a Reaction. This spell can also burn flammable objects. The flame can be used for precision cutting on objects such as doors and walls, dealing [ 1 / 2 / 3 ] damage per Round and ignoring [ 3 / 6 / 12 ] Armor of the object. This damage can be used against a creature as an Arcane weapon basic attack.
+Range: 12 meters
+This spell always succeeds and does not use a casting roll. You attack with a shot of shadow energy as an Arcane weapon basic attack. Shadow Bolt deals [ 0 / 1d6 / 2d6 ] + SPI damage. On a direct hit, the target gains the debuff Shadow Bolt: [- 1 / -2 / -3 ] Perception and [ -10 / -20 / -30 ] Accuracy.
+
+Poison Resistance
+Prerequisite: Experience attribute damage by poisoning
+Cost: 400 XP
+Expedited for: Rage, Science
+Activation: Passive
+You are resistant to attribute damage.
 
 Wind Hand
 Unlocks: Path of the Air Arcana
@@ -166,3 +106,569 @@ Activation: 1 Action
 Range: [ 12 / 30 / 100 ] meters
 "It's either a poltergeist or the wind mage's school let out early today."
 You pull objects with the wind. You move an object of [ 0 / 1 / 5 ] Bulk or less from any point in range to any other point in range. If this object is propelled toward an enemy, this is an Arcane weapon basic attack that deals [ 1 / 1d6 / 2d6 ] + Spirit damage.
+
+Antiflow Accoutrements
+Equipment, 30 sp
+This outfit baffles the arcane auras around you. While wearing this outfit, you take a -4 penalty to casting rolls but gain resistance against magical damage.
+
+Calm the Waters
+From: Path of the Magician
+Cost: 200 XP
+Expedited (Magic): 150 XP
+Activation: 1 Reaction, 1 VP
+You dispel the sense of urgency, soothing those around you.
+This ability is usable when conversing with someone while under a Time Pressure. Gain Flow 2 for the next Charisma or Wisdom check you make as part of this conversation. Additionally, if you earn Heroic Creativity or Legendary Roleplaying while using this ability, the creature’s Attitude increases one step (for example from Hostile to Wary or from Neutral to Friendly).
+
+Bottle Thrower
+From: Path of the Blue
+Cost: 200 XP
+Expedited (Mind): 150 XP
+Expedited (Science): 150 XP
+Activation: Respite
+You like to make curious liquids and throw them at people.
+During a Respite, you can craft one of the following potions. Each potion weighs 1 Bulk. All potions expire at the end of the Act and lose their potency, becoming useless. These potions can be thrown as a Grenade. These Grenades have no Blast Zone (only affects the target square).
+Bottle of Weak Acid - this Grenade deals 1d6 burn damage.
+Bottle of Weakening Poison - this Grenade reduces any damage the target deals by 1.
+Bottle of Drymouth Poison - this Grenade causes the target to take a -3 penalty to all casting rolls.
+
+Cherry Bomb
+Consumable, 10 sp
+When thrown (up to 12 meters away), this bomb explodes and crackles. This is a Dexterity-based skill strike that deals 1d6 damage and, on success, deafens the target until the start of your next turn.
+
+Noxious Poison
+Prerequisite: Burning Fluid (Tinker)
+Cost: 400 XP
+Expedited for: Craft, Science
+DC: 3
+This poison applies 1 attribute damage to STR, DEX, AGI, or PER (chosen when crafted).
+
+Hammer Time
+Prerequisite: Forge Onward! (Engineer)
+Cost: 300 XP
+Expedited for: Craft
+Activation: 3 Actions
+Make a melee basic attack that deals an extra 2d6 damage. If you are Supported, this attack gains +4d6 additional damage.
+
+Arcane Duelist
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Raw Energy (Magician), Course of Combat
+Unlocks: Path of the Arcane Duelist, Path of the Elementalist
+Cost: 300 XP
+Expedited for: Magic
+Activation: Passive
+Your attack in Raw Energy (Magician) is now considered an Arcane weapon basic attack that gains +10 Accuracy.
+
+Dynamite Bomb, “Crater Maker”
+Prerequisite: Big Boomer
+Cost: 500 XP
+Expedited for: Craft
+DC: 20
+This mega-sized rocket creates a devastating blast. This ammunition must be fired from a Mortar. Upon exploding, this bomb deals 6d6 + WIS damage to all targets within 6 meters of the blast site. Targets between 6 and 30 meters take 3d6 + WIS damage. This explosive often destroys most objects within range. Exposure to this blast, even as far as a hundred meters away, can cause minor irradiation.
+
+Scrap Salvager
+Prerequisite: Minor Tinkering (Tinker)
+Cost: 400 XP
+Expedited for: Craft
+Activation: Passive
+When you roll to loot for automata or technology, add your TEK to the result.
+
+Three Steps Ahead
+Prerequisite: Assess Environment
+Cost: 600 XP
+Expedited for: Mind
+Activation: 2 Reactions, 3 Vim
+You think through the possibility of taking certain actions, mentally calculating probability analyses and determining the best course of action.
+You may take the remainder of your turn up to three times, resolving the outcomes of your actions. After each turn, your outcomes are undone after they are resolved, having only occurred as a hypothetical thought. Actions other than spells which you attempted during your hypothetical analyses gain a +2 bonus for each attempt, stacking up to three times (once per analysis). This feat cannot provide new information, such as looking around a corner or using an "Assess" ability to gain information. However, this feat can bring awareness to overlooked information; for example, if a trap would be triggered in a hypothetical turn, the Mastermind learns where the trigger is, assuming that information is able to be perceived from where they are.
+
+Holy Protector
+Prerequisite: Heroic Defense (Paladin)
+Cost: 500 XP
+Expedited for: Rage, Magic, Charm
+Activation: 2 Actions, X MP
+You and all nearby allies gain a number of temporary HP equal to your (CHA + SPI) * X.
+
+Tranquilizer Dart
+Prerequisite: Crouching Tiger (Vanguard)
+Cost: 400 XP
+Expedited for: Finesse, Science
+Activation: Passive
+WIS times per Rest, you may throw a Tranquilizer Dart as a Thrown Weapon or fire it through a Rifle. The dart deals no damage and is effective only against beasts. On a direct hit against a beast target, they take 1 paralysis damage, lose 1 Alert, become fatigued, and their Speed is reduced by 2 until the end of the Encounter. If your Accuracy is at least double their Vim, they take these effects twice.
+
+Spark Gun
+This ability is not required for the Path Completion Bonus.
+Prerequisite: Automatic Carbine
+Cost: 500 XP
+Expedited for: Craft
+DC: 6
+The Spark Gun is a ranged Tinkertech weapon that fires many small flecks of hot iron. It can be fired using only 1 Action and deals 1d6 damage and 1d6 burn damage. It has a Range of 3 meters.
+
+Improved Traps
+Prerequisites: Fire Trap and Spike Trap
+Cost: 800 XP
+Expedited for: Finesse, Craft
+Activation: Passive
+All of your traps deal an additional 1d6 damage, and targets of your traps take a -1 Speed debuff which stacks across trap types and with other Speed debuffs from other traps.
+
+Restore Mind
+Cost: 500 XP
+Expedited for: Magic
+MP Cost: [ 2 / 3 / 4 ]
+Casting DL: [ 11 / 15 / 20 ]
+Activation: 1 Action
+Range: [ 2 / 6 / 12 ] meters
+You provide yourself or an ally within range [ 1 / 2 / 3 ] of these effects (you may choose the same effect multiple times):
+The target is no longer charmed
+The target is no longer confused
+The target ignores the effects of fatigued for the rest of this Encounter
+The target gains 1 MP
+The target reduces their paralysis damage by 1
+The target reduces their stun damage by 1
+
+Reputation
+Cost: 300 XP
+Expedited for: Charm
+Activation: Passive
+As a charismatic person, you’ve been known to carry a Reputation with you wherever you go. The amount of Reputation you carry is equal to your Charisma. You can use your Reputation to call in a Favor, which occupies some amount of your Reputation equal to its Demanding Character (DC). This DC is used up for each Favor called in, and is subtracted from your Reputation until you Pay Back the Favor, or until the next Intermission --- your Favors are automatically repaid between Quests. Calling in a Favor usually requires you to be in a civilization where you are well-known, but this is up to the discretion of the GM. If you have completed the Path of the Diplomat, your Reputation is tripled.
+...
+Favor of Wealth
+Prerequisite: Reputation
+Cost: Free
+DC: 1
+You borrow up to 50 sp. To Pay Back this Favor, return the money.
+...
+Favor of Hospitality
+Prerequisite: Reputation
+Cost: 400 XP
+Expedited for: Charm
+DC: 1
+You find a place (within a civilization) for you and your allies to rest comfortably and safely for free. To Pay Back this Favor, present the landlord with a gift or service of some kind.
+
+
+Favor of Service
+Prerequisite: Reputation
+Cost: 400 XP
+Expedited for: Charm
+DC: 1
+You call in the service of a skilled worker, such as a blacksmith, alchemist, or cleric. This Favor provides the equivalent value of immediately using any mundane Equipment or Consumable. To Pay Back the Favor, perform some service which honors their work in some way.
+...
+Favor of Travel
+Prerequisite: Reputation
+Cost: 400 XP
+Expedited for: Charm
+DC: X
+You call for transport from one place to another. The DC of this favor is 1 for traveling up to 10 miles; 2 for up to 100 miles; 3 for up to 1000 miles; and so on exponentially. To Pay Back this Favor, present the driver with a gift or service of some kind.
+...
+Favor of Information
+Prerequisite: Reputation
+Cost: 400 XP
+Expedited for: Charm
+DC: X
+You call for some information. The DC of this favor is 1 for common knowledge, 2 for uncommon knowledge, or 3 for rare knowledge. The DC increases by 1 if this knowledge is illegal or related to illegal activity. You cannot use this Favor for knowledge that is unknown to the civilization you're inquiring in. This Favor cannot be Paid Back --- you must wait until the next Intermission to recover your Reputation.
+
+Wanderer of Many Paths
+Cost: Free
+Activation: Passive
+Gain 50 XP for every Path you purchase an ability in. This effect also applies retroactively.
+
+Medical Degree
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Gift of Science, Surgery
+Cost: 400 XP
+Activation: Passive
+Instead of rolling 1d6 when performing Surgery, roll 2d6. Additionally, you may use a Hero Point on this roll as if it were a check.
+
+Ice Blast
+Unlocks: Path of the Ice Arcana
+Cost: 300 XP
+Expedited for: Magic
+MP Cost: [ 0 / 1 / 2 ]
+Activation: 2 Actions
+You attack with a shot of freezing magical energy.
+This spell always succeeds and does not use a casting roll. This is considered an Arcane weapon basic attack. Ice Blast deals [ 0 / 1d6 / 2d6 ] damage and [ 2d6 / 4d6 / 6d6 ] Vim damage.
+
+Lucky Charm
+Consumables, 10 sp
+This trinket provides +1 Luck until the next Rest.
+
+Mask of the Plague Doctor
+Equipment, 30 sp
+While wearing this mask shaped like a bird beak, you are resistant to damage from poisons, toxins, and diseases, but take a -1 penalty to Perception and Charisma.
+
+Stun Gun
+Equipment, 20 sp
+Once per Encounter, this gun can be used (with 2 Actions) to paralyze a target up to 3 meters away until the end of the Round. Once per Rest, it can additionally stun them until the end of the Round. Targets who are resistant to electrical attacks are unaffected.
+
+Resolute Coordination
+From: Path of the Soldier
+Cost: 200 XP
+Expedited (Charm): 150 XP
+When an ally attacks an enemy that you previously attacked this turn, they don't need to make attack rolls.
+
+Health Insurance
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Course of Wounds, Course of Flux, Gift of Charm
+Cost: 400 XP
+Activation: Intermission
+Money talks, and it asks the clerics for the gift of life.
+Between Quests, you may pay 500 sp for you or an ally to remove all Grievous Wounds and gain the Tide “Healed by the Clerics.” This ability cannot be used if the target already has this Tide.
+
+Overstuffed Barrel
+Cost: 400 XP
+Expedited for: Finesse
+Activation: 2 Actions, 3 Vim
+Make an attack with any Sidearm, Rifle, or Shotgun weapon. The attack's range is reduced to 6 meters, but the shot deals an additional 2d6 burn damage.
+
+Steamboard
+Cost: 300 XP
+Expedited for: Craft
+DC: 4
+The Steamboard is a steam-powered hoverboard capable of riding up to TEK meters above a surface. The Steamboard can carry one person and their equipment. This device is considered a worn item that gives you a Speed of 6 * WIS. Interlocking gears on the board ensure that the user does not fall off, and the gyroscopic steam vents prevent the board from toppling over, even if attacked. The rider is immune to being knocked prone or dismounted involuntarily. The steam emitted from the underside of the board is harmless for combat purposes. The Steamboard cannot be targeted, take damage, or block attacks, unless an attack targets your inventory or clothing. This Design may be built only during an Intermission.
+
+Utility Saw
+Unlocks: Path of the Cyborg Tinker
+Cost: 400 XP
+Expedited for: Craft
+DC: 2
+Activation: Passive
+This multi-function Device counts as both a Tinkertech and a Blade weapon for all purposes and deals the base damage of a Blade weapon plus TEK bleeding. This Device can also be used to pick locks or cut wood.
+
+Threat Analysis Heads Up Display
+Prerequisite: Tinker Goggles
+Cost: 400 XP
+Expedited for: Craft
+DC: 3
+Activation: Passive
+This Goggle attachment displays helpful tooltips analyzing a threat, enemy, or creature. This display shows identifiable strengths and weaknesses of the threat based on noticeable visual cues. For each Reaction or Action you spend reading this information, you learn one new Weakness, Tactic, or Ability that the enemy has.
+
+Fire Arrow
+Cost: 300 XP
+Expedited for: Craft
+DC: 1
+This arrow can be fired by any Bow weapon. Upon hitting, it explodes into a fire, dealing an additional 3 burn damage to the target and all adjacent hexes.
+
+Scatter Bomb
+Cost: 300 XP
+Expedited for: Craft
+DC: 3
+This Grenade deals 1d6 damage three times to the target and everything within 2 meters.
+
+Steady Hands
+Cost: 500 XP
+Expedited for: Alertness
+Activation: Passive
+Gain +1 Dexterity.
+
+Second Wind
+Cost: 300 XP
+Expedited for: Rage
+Activation: Passive
+Once per Rest, when you reach 0 HP, gain 1 HP immediately after the damage resolves. This effect occurs immediately, before any other consequences of reaching 0 HP.
+
+Triple Shot
+Cost: 300 XP
+Expedited for: Finesse
+Activation: 3 Actions, 10 Vim
+Make 3 ranged skill strikes with a weapon you have equipped; these skill strikes deal normal weapon damage.
+
+Tripod
+Cost: 500 XP
+Expedited for: Alertness
+Activation: Passive
+Bonuses you gain from Absolute Precision and Improved Aim (Vanguard) are considered a buff that persists throughout the Encounter. This buff is lost when you move or are moved.
+
+Spell Recovery
+Unlocks: Path of the Persistent Mage
+Cost: 300 XP
+Expedited for: Magic
+Activation: Free Reaction
+When you fail a spell cast, and this failure is not made into a success by other means, you may choose to create a Magical Mishap to regain 1 Action. This ability is only usable if the spell Activation costs 1-3 Actions.
+
+Foresight
+Unlocks: Path of the Divination Arcana
+Cost: 300 XP
+Expedited for: Magic
+MP Cost: [ 1 / 2 / 3 ]
+Activation: 1 Action
+Casting DL: [ 9 / 13 / 16 ]
+Range: Touch
+Until the next Rest, the touched creature gains a [ +2 / +3 / +6 ] buff to WIS checks made to sense threats or other danger. Additionally, while the spell is active, they may reroll up to [ 1 / 2 / 4 ] Perception checks. You may use this spell on yourself.
+
+Extend Darkness
+Unlocks: Path of the Shadow Arcana
+Cost: 400 XP
+Expedited for: Magic
+MP Cost: [ 1 / 2 / 3 ]
+Casting DL: [ 9 / 13 / 16 ]
+Activation: 2 Actions
+Range: 12 meters
+You lengthen existing shadows into an umbral cover. You can extend existing shadows by [ 6 / 12 / 18 ] hex meters within range. These shadows appear completely black. Creatures inside the shadows gain a [ +2 / +3 / +4 ] bonus to Agility checks made for stealth inside the shadows. Whenever you are attacked within the area of this spell, gain [ 0 / 1 / 2 ] Alert(s). Extend Darkness lasts while maintained as a Reaction.
+
+Cosmopolitan
+Cost: 200 XP
+Activation: 1 Reaction, 2 Vim
+This ability is usable when conversing with someone with a language barrier, thick accent, or communication is otherwise made difficult by cultural differences. You gain Flow on Charisma checks made during this conversation.
+
+Heroic Might
+Cost: 300 XP
+Activation: 1 Reaction, 5 Vim OR 2 MP
+You put extra effort into one heroic action.
+You gain Flow to your next roll.
+
+Disabling Strike
+Cost: 300 XP
+Expedited for: Alacrity
+Activation: Attack, 3 Vim
+Your strike destabilizes the target. Until the end of the Encounter, they take Ebb on all rolls.
+
+Backflip
+Unlocks: Path of the Fluid Fighter
+Cost: 300 XP
+Expedited for: Alacrity
+Activation: 1 Reaction, 2 Vim
+Dang, that's cool.
+This ability is usable in response to a direct hit. It becomes a glancing blow, and you may move up to 2 hexes away. This ability can also be used to gain Flow to any Agility check. If you are Supported, this ability does not cost a Reaction.
+
+You Have My Strategy
+Cost: 300 XP
+Expedited for: Mind, Science
+Activation: 1 Action, 3 Vim
+Choose an ally. They are Supported, gain Alert, and you identify one Tactic or Weakness of an enemy adjacent to them.
+
+So Predictable
+Cost: 300 XP
+Expedited for: Alertness
+Activation: Attack, 2 Vim
+If you or an ally has identified a Tactic of your target, add your Perception to your damage rolls. If you are Supported, this bonus is doubled.
+
+Environmental Awareness
+Cost: 300 XP
+Expedited for: Mind, Science
+Activation: 2 Actions
+You study your surroundings.
+Until the end of the Encounter, hazards and environmental objects that you use to deal damage deal twice as much damage. Hazards and environmental objects that damage you deal half as much damage.
+
+Trapsense
+Cost: 300 XP
+Expedited for: Alertness, Alacrity
+Activation: 3 Actions, 2 Vim
+You locate all traps and hazards within a 6 meter radius. This ability gives only their general location and provides no clues for triggering or disarming them.
+
+Shockingly Effective
+Cost: 200 XP
+Expedited (Craft): 150 XP
+Expedited (Science): 150 XP
+When you deal electrical damage to Wet targets, choose one:
+- Roll for damage twice and take the higher result
+- All affected targets roll Strength against double your damage. If they tie, or roll lower, they are Stunned.
+
+Heat Resistance
+Prerequisite: Improved Toolkit
+Cost: 500 XP
+Expedited for: Craft
+Activation: Passive
+Your time at the forge has gotten you used to the heat.
+You gain resistance to fire and burning.
+
+Hasty Observation
+Cost: 300 XP
+Expedited for: Mind, Science
+Activation: 1 Action, 1 MP
+Choose an enemy. You learn one of their Tactics or Weaknesses (your choice). If you know all of their Tactics and Weaknesses, the GM will tell you so and you are reimbursed the activation cost of this ability.
+
+Fire Trap
+Prerequisite: Lightning Trap
+Cost: 600 XP
+Expedited for: Finesse, Craft
+Activation: 1 Action, 3 Vim
+You set down a Fire Trap in an adjacent hex. Enemies who walk over the trap take 3d6 burning. The trap breaks upon usage. You may carry up to TEK Fire Traps at a time; each one weighs 1 Bulk. You can craft traps during an Intermission.
+
+Spook
+Cost: 300 XP
+Expedited for: Mind, Science
+Activation: 2 Actions
+Choose an adjacent enemy that you know would flee when alone. They flee, even if they have other allies on the battlefield.
+
+Confidence
+Cost: 300 XP
+Expedited for: Charm
+Activation: Passive
+"I took a six-month seminar on how to be more confident. 3 proofs later, I'm confident I was ripped off."
+Gain Flow on all Charisma checks.
+
+Bullet Tackle
+Cost: 300 XP
+Expedited for: Rage
+Activation: 2 Actions, X Vim
+Move in a straight line until something blocks your path or you have moved a number of hexes equal to X + twice your Speed. If something blocked your path, make a melee attack against it. This attack gains an amount of extra damage equal to the number of hexes you moved using this ability.
+
+Pistol Whip
+Cost: 300 XP
+Expedited for: Finesse, Rage
+Activation: Attack, 2 Vim
+"Ah-ha! They can't hurt me if I'm standing right in front of them!" -Your enemies
+Make an Unarmed attack on an adjacent foe while holding a Sidearm weapon. The target is paralyzed and distracted.
+
+Riveting Performance
+Cost: 300 XP
+Expedited for: Charm
+Activation: 3 Actions
+"Ladies and gentlemen, all eyes on me! Ignore the rogue in the back, he's just collecting... donations."
+Once per Rest, up to CHA creatures able to see or hear you are Stunned, and take a penalty equal to your CHA to their Perception rolls while Stunned. This is not considered an aggressive action. Depending on your audience, they might even decide to give you some money.
+
+Guild Bedroom
+Unlocks: Path of the Home Improver
+Cost: 300 sp
+Activation: Passive
+There’s no place like home.
+You have your own space in the Three Rivers Guild Headquarters. There is enough room for 3 Home Advancements. This space may be shared with other adventurers at your discretion.
+
+Uptime Anxiety
+Cost: 200 XP
+Expedited for: Craft
+Activation: Passive
+When one of your Tinker Designs is destroyed, immediately gain an Action.
+
+A Cure for What Ails You
+Cost: 500 XP
+Expedited for: Magic
+MP Cost: [ 2 / 4 / 6 ]
+Casting DL: [ 11 / 15 / 20 ]
+Activation: 2 Actions
+Range: [ 6 / 18 / 60 ] meters
+All targets within range are no longer sick, gain [ +2 / +4 / +6 ] to checks made to resist toxins and diseases, and gain [ 1d6 / 2d6 / 4d6 ] + SPI HP.
+
+Magitek Enchantment: Mech Trike
+Prerequisite: Sky Skiff (Transport Tinker)
+Cost: 900 XP
+Activation: Passive
+When you craft a Mech Trike, you may infuse 6 of your max MP into the Device. This enchanted Device has a Flight Speed equal to its Speed, twice its normal overland speed, and anyone who rides it is proficient with this mount. Whenever you would move any number of hexes and you are within 30 meters of the enchanted Mech Trike, you may choose to move yourself, the Mech Trike, or both. The enchanted Mech Trike has 5 * WIS HP, 10 * TEK Vim, and 3 * TEK Armor. Purchasing this ability also increases your Bluespace by 3.
+
+Inquisitor's Examination
+Prerequisite: Course of Combat
+Cost: 300 XP
+Expedited for: Mind, Science
+Activation: 1 Action
+Choose a target within 12 meters and one pool or stat from the following list. You identify the exact value of this target's pool or stat: HP, max HP, MP, max MP, Vim, max Vim, Speed, Armor, Burden, Initiative, Accuracy (for a given attack), or base damage (for a given attack).
+
+Hair of the Dog
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Course of Flux, Course of Heroism, Course of Ebb and Flow
+Cost: 300 XP
+"A conventional crime story is simple - it's just a corpse in the river or something, and a detective with an alcohol problem.”
+When you take this ability, choose a vice, such as Alcohol or Coffee. Gain “Vice: [vice]” as a Grate. Whenever you consume this vice, lose 3 HP and gain Flow to your next check.
+
+Spell Bomb
+Prerequisite: Minor Artificing
+Cost: 600 XP
+DC: 3
+This Grenade can hold an Arcane Charge like a normal Grenade but does not count as a weapon for the purpose of counting toward your limit of Arcane Charges available.
+
+Strongly-Worded Letter
+Prerequisite: Reputation
+Cost: 400 XP
+Expedited for: Charm
+Activation: Free Action during Rest
+You send a message in advance of your arrival to a civilization. When you arrive, the Favor is already ready for you and the DC is decreased by 1. This ability is usable once per Rest.
+
+Careful Medicine
+This ability is not required for the Path Completion Bonus.
+Prerequisites: Gift of Science
+Cost: 300 XP
+Activation: 1 Reaction, 2 MP
+This ability is usable only on your turn in combat. You or an adjacent ally gains WIS HP and temporary HP. If, at the start of your next turn, neither you or the target moved and neither of you were targeted for any attacks or other damage, the target gains an additional 3 * WIS HP and temporary HP.
+
+Precision Slap
+Cost: 300 XP
+Expedited for: Science, Mind
+Activation: 1 Action, 3 Vim
+Choose an adjacent ally affected by charm, confusion, or a fear effect. Roll 1d6, if the result is less than your WIS, the ally is cured of one of these effects and Supported.
+
+Improved Bracer Mount
+Prerequisite: Bracer Mount
+Cost: 400 XP
+Expedited for: Craft
+DC: 2
+This arm brace has an attachment on the forearm to mount a two-handed gun. In all other aspects, this bracer is identical to the Bracer Mount.
+
+Explosive Dart
+Cost: 300 XP
+Expedited for: Craft
+DC: 1
+This dart can be thrown as a Thrown Weapon. It deals +2d6 damage. For an additional 2 DC, the explosives can be augmented to deal the bonus damage to everything in a 1 meter radius area of effect.
+
+Sonic Shotgun
+Cost: 400 XP
+Expedited for: Craft
+DC: 3
+This gun emits a huge burst of sound. Until your next turn, all nearby allies take 1 paralysis damage and all nearby enemies are staggered and take 1 paralysis damage. This ability is usable once per Encounter.
+
+Tear Gas Capsule
+Consumable, 10 sp
+When thrown (up to 12 meters away), this capsule enshrouds the target hex and adjacent hexes with a noxious irritant. Creatures in the affected area of effect must succeed a DL 15 Strength check or take 1d6 burn damage and a blinded debuff.
+
+Ornithopter
+Equipment, 200 sp
+This foldable bicycle with wings weighs 5 Bulk. When unfolded, it can be ridden to gain a Flight Speed equal to half your Speed. However, the Ornithopter can't gain altitude, it can only fly up to the height it starts at. After a flight, the Ornithoper breaks until the next Rest.
+
+Lightning Blade
+Cost: 400 XP
+Expedited for: Craft
+DC: 2
+This sword is composed of a metal hilt with a long glass tube attached to it. Running along the inside of the glass tube is a bundle of live electrical wires which light up the tube. The fact that it shatters after only one use is considered a feature of the design.
+When this Tinkertech blade strikes an enemy, the glass shatters and the wires deal a powerful electric shock, dealing 4d6 electrical damage and 6 bleed damage. The Lightning Blade is broken and useless after one hit.
+
+Craft Masterwork Gun
+Cost: 400 XP
+Expedited for: Craft
+DC: 2
+You create a Sidearm, Rifle, or Shotgun that has +10 Accuracy and deals +1d6 damage.
+
+Rally to Arms
+Cost: 300 XP
+Activation: 1 Action, 2 Vim
+All allies within 3 meters gain a +10 bonus to Accuracy until the end of the Encounter and are Supported.
+
+Disable
+Cost: 400 XP
+Expedited for: Finesse, Alacrity
+Activation: 2 Actions, 4 Vim
+Male a melee skill strike that deals 3 stun damage with impact instead of normal damage.
+
+Bang Pistol
+Cost: 400 XP
+Expedited for: Craft, Science
+Activation: 2 Actions, 3 Vim
+As a joke, the pistol just extends a white flag that says "Bang!", but actually the deployment is about 170 decibels... The really cool part is how the sound is aimed to be only in a localized area, so this won't even bother the neighbors!
+An adjacent enemy gains a deafened debuff unless they pass a STR check DL 11 + your Level. All creatures within 3 meters of the target must pass the same STR check or take 1 paralysis damage.
+
+Full Attention
+Cost: 400 XP
+Expedited for: Mind, Rage
+Activation: 3 MP, 10 Vim
+Remove your fatigue as if you had Rested. (If you were exhausted, you are now fatigued.)
+
+Knock Prone
+Unlocks: Path of the Brawler
+Cost: 400 XP
+Expedited for: Rage, Finesse
+Activation: Attack, X Vim
+If this melee attack directly hits, the target is knocked prone in addition to normal damage plus an extra 1d6. This costs an amount of Vim equal to the target's Strength (min. 0).
+
+Catch Your Breath
+Cost: 400 XP
+Expedited for: Rage
+Activation: Respite
+You spend a few minutes eating, drinking, treating wounds, and meditating or napping.
+Gain STR Vim and half as much HP. This ability is usable STR times per Rest.
+
+Mind-Reading Jinx
+This ability is not required for the Path Completion Bonus.
+Prerequisite: Tracking Jinx
+Cost: 400 XP
+Expedited for: Magic, Charm
+MP Cost: [ 1 / 3 / 5 ]
+Casting DL: [ 13 / 17 / 21 ]
+Activation: 3 Actions
+Range: 1 meter
+"I’m just a good guesser."
+Choose a target. If they fail a Spirit check of DL [ 9 / 14 / 21 ], you can hear their thoughts while this spell is maintained as a Reaction. If they succeed the Spirit check, they become aware that you attempted to read their mind. Some minds, such as animals, monsters, automata, and persons whose native language is not one you know, may have thoughts that are not clearly interpretable. This spell fizzles if the target moves out of range.
