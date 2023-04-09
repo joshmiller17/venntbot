@@ -119,7 +119,7 @@ async def votable_name(message_id: int) -> str:
     async with aiosqlite.connect(DATABASE_PATH) as db:
         cursor = await db.execute("SELECT ability_name FROM messages WHERE message_id = ?", (message_id,))
         row = await cursor.fetchone()
-        return row[0] if result is not None else 0
+        return row[0] if row is not None else 0
 
 
 async def get_votes() -> dict:
