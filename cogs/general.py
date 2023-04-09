@@ -23,12 +23,13 @@ class General(commands.Cog, name="general"):
         self.abilityversion = "0.13.7"
         
         # load ability voting
+        bot.logger.info("Loading abilities")
         with open('ballot.txt', 'r') as file:
             file_contents = file.read()
             self.ballot = file_contents.split("\n\n")
             for item in self.ballot:
                 self.ballot_items.append(item.split("\n")[0])
-            bot.logger.info('Loaded %d abilities' % len(self.ballot))
+                bot.logger.info('Loaded %d abilities' % len(self.ballot))
         #random.seed(42)
         #random.shuffle(self.ballot) # random but ordered
 
