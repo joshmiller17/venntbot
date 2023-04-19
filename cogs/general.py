@@ -239,8 +239,8 @@ class General(commands.Cog, name="general"):
     @app_commands.describe(id="Message ID")
     async def manual_add_votable(self, context: Context, id: str) -> None:
         try:
-            content = await context.channel.fetch_message(id).content
-            ability = content.split('\n')[2].strip()
+            msg = await context.channel.fetch_message(id)
+            ability = msg.content.split('\n')[2].strip()
             await db_manager.add_ability(id, ability)
             await context.add_reaction('👍')
         except Exception as e:
