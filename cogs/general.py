@@ -242,7 +242,7 @@ class General(commands.Cog, name="general"):
             msg = await context.channel.fetch_message(id)
             ability = msg.content.split('\n')[2].strip()
             await db_manager.add_ability(id, ability)
-            await context.send('👍')
+            await context.send('Okay 👍')
         except Exception as e:
             await context.send(f'Error: {e}')
         
