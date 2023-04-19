@@ -238,7 +238,6 @@ class General(commands.Cog, name="general"):
     )
     @app_commands.describe(id="Message ID")
     async def manual_add_votable(self, context: Context, id: str) -> None:
-        original_vote = await db_manager.set_vote(user, ability, vote)
         try:
             content = await context.channel.fetch_message(id)
             ability = content.split('\n')[2].strip()
