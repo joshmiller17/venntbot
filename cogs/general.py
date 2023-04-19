@@ -29,7 +29,7 @@ class General(commands.Cog, name="general"):
             self.ballot = file_contents.split("\n\n")
             for item in self.ballot:
                 self.ballot_items.append(item.split("\n")[0])
-                bot.logger.info('Loaded %d abilities' % len(self.ballot))
+            bot.logger.info('Loaded %d abilities' % len(self.ballot))
         #random.seed(42)
         #random.shuffle(self.ballot) # random but ordered
 
@@ -181,6 +181,7 @@ class General(commands.Cog, name="general"):
                 await reaction.message.remove_reaction(constants.COOL, user)
             if original_vote == -1  and original_vote != vote:
                 await reaction.message.remove_reaction(constants.CUT, user)
+            await reaction.message.add_reaction('🗳️')
     
     
     @checks.not_blacklisted()
@@ -228,7 +229,23 @@ class General(commands.Cog, name="general"):
         
         await db_manager.add_ability(message.id, query)
         
-        
+      
+    @checks.not_blacklisted()
+    @app_commands.guilds(discord.Object(id=constants.GUILD_ID))
+    @commands.hybrid_command(
+        name="manual_add_votable",
+        description="Manually add a votable message.",
+    )
+    @app_commands.describe(id="Message ID")
+    async def manual_add_votable(self, context: Context, id: str) -> None:
+        original_vote = await db_manager.set_vote(user, ability, vote)
+        try:
+            content = await context.channel.fetch_message(id)
+            ability = content.split('\n')[2].strip()
+            await db_manager.add_ability(id, ability)
+            await context.add_reaction('👍')
+        except Exception as e:
+            await context.send(f'Error: {e}')
         
     @commands.hybrid_command(
         name="version",
