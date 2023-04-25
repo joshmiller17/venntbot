@@ -1,4 +1,4 @@
-import platform, random, requests, aiohttp, asyncio, json, os
+import platform, random, requests, aiohttp, asyncio, json, os, re
 import constants
 import discord
 from discord import app_commands
@@ -7,6 +7,8 @@ from discord.ext.commands import Context
 from collections import defaultdict
 
 from helpers import checks, db_manager
+
+ABILITY_CACHE_URL = "https://pub-8e2f06dbcb7b4dde8553a52dd656dbee.r2.dev/VENNT_ABILITIES"
 
 # Here we name the cog and create a new class for the cog.
 class General(commands.Cog, name="general"):
@@ -22,9 +24,18 @@ class General(commands.Cog, name="general"):
         self.botversion = "0.14.0"
         self.abilityversion = "0.13.7"
         
+        # load abilities
+        response = requests.get(ABILITY_CACHE_URL)
+        self.ability_cache = json.loads(response.content.decode('utf-8'))
+        # paths: [{name, url, desc, reqs, completionBonus}]
+        # abilities: [{name, effect, custom_fields: [path, purchase, expedited, activation, cost, flavor]}]
+        self.ability_names = []
+        for ability in self.ability_cache["abilities"]:
+            self.ability_names.append(ability["name"])
+
         # load ability voting
         bot.logger.info("Loading abilities")
-        with open('ballot.txt', 'r') as file:
+        with open('ballot.txt', 'r', encoding='utf-8') as file:
             file_contents = file.read()
             self.ballot = file_contents.split("\n\n")
             for item in self.ballot:
@@ -223,9 +234,6 @@ class General(commands.Cog, name="general"):
         await message.add_reaction(constants.CUT)
         
         query = self.ballot[self.ballot_index-1].split('\n')[0].strip()
-        if await self.has_lookup(query):
-            await context.send(f'**Warning!** Version {self.abilityversion} of Vennt has an ability of the same name:\n')
-            await self.lookup(context, query)
         
         await db_manager.add_ability(message.id, query)
         
@@ -315,19 +323,6 @@ class General(commands.Cog, name="general"):
             response += f'{key}: **{points}** point{"" if points == 1 else "s"} ({vote_dict[key]["cool"]} / {vote_dict[key]["cut"]})' + "\n"
         return response
 
-
-    async def has_lookup(self, query):
-        # This will prevent your bot from stopping everything when doing a web request - see: https://discordpy.readthedocs.io/en/stable/faq.html#how-do-i-make-a-web-request
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                constants.SERVER_URL + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token, query)
-            ) as request:
-                if request.status == 200:
-                    response = await request.json(content_type="text/html")
-                    return response["success"] and response["value"] != ''
-            return False
-
-
     @commands.hybrid_command(
             name="lookup",
             description="Query the Vennt wiki for an ability.",)
@@ -342,23 +337,48 @@ class General(commands.Cog, name="general"):
         :param query: The ability name to look up.
         """
         
-        # This will prevent your bot from stopping everything when doing a web request - see: https://discordpy.readthedocs.io/en/stable/faq.html#how-do-i-make-a-web-request
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                constants.SERVER_URL + 'lookup_ability?auth_token=%s&name=%s' % (self.bot.auth_token, query)
-            ) as request:
-                if request.status == 200:
-                    response = await request.json(content_type="text/html")
-                    self.bot.logger.info("Lookup:" + str(response))
-                    if not response["success"]:
-                        await context.send(f'`[{response["info"]}]` I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
-                    else:
-                        msg = "".join(response["value"])
-                        if msg:
-                            await context.send("```\n" + msg + "```")
-                        else:
-                            await context.send(f'`No such ability` I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.')
-
+        # paths: [{name, url, desc, reqs, completionBonus}]
+        # abilities: [{name, effect, custom_fields: [path, purchase, expedited, activation, cost, flavor]}]
+        
+        # look for ability
+        pattern = re.compile(f".*{query}.*", re.IGNORECASE)
+        matches = [name for name in self.ability_names if pattern.match(name)]
+        if len(matches) > 1:
+            await context.send("I found these matching abilities:\n" + '\n'.join(matches))
+        elif len(matches) == 1:
+            for ability in self.ability_cache["abilities"]:
+                if ability["name"] == matches[0]:
+                    path = ""
+                    if "path" in ability['custom_fields']:
+                        path = "\n" + ability['custom_fields']["path"]
+                    cost = ""
+                    if "purchase" in ability['custom_fields']:
+                        cost = "\nCost: " + str(ability['custom_fields']["purchase"])
+                    expedited = ""
+                    if "expedited" in ability['custom_fields']:
+                        expedited = "\nExpedited for: " + ability['custom_fields']["expedited"]
+                    mp_cost = "" #[1,2,4]
+                    if "mp_cost" in ability['custom_fields']:
+                        mp_costs = ability['custom_fields']['mp_cost']
+                        mp_cost = f"\nMP Cost: [ {mp_costs[0]} / {mp_costs[1]} / {mp_costs[2]} ]"
+                    cast_dl = ""
+                    if "cast_dl" in ability['custom_fields']:
+                        cast_dls = ability['custom_fields']['cast_dl']
+                        cast_dl = f"\nCasting DL: [ {cast_dls[0]} / {cast_dls[1]} / {cast_dls[2]} ]"
+                    activation = ""
+                    if "activation" in ability['custom_fields']:
+                        activation = "\nActivation: " + ability['custom_fields']["activation"]
+                    flavor = ""
+                    if "flavor" in ability['custom_fields']:
+                        flavor = f"\n*{ability['custom_fields']['flavor']}*"
+                    msg = f"```\n{ability['name']}{path}{cost}{expedited}{mp_cost}{cast_dl}{activation}{flavor}\n{ability['effect']}```"
+                    await context.send(msg)
+                    return
+            await context.send("Unexpected error -- ability found but not found")
+        else: # 0
+            await context.send(f"`No such ability` I couldn\'t find any ability matching `{query}` in version {self.abilityversion} of the ability cache.")
+            
+            
 
 # And then we finally add the cog to the bot so that it can load, unload, reload and use it's content.
 async def setup(bot):

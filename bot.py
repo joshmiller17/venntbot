@@ -142,33 +142,6 @@ async def init_db():
 
 
 
-
-
-with open("api_credentials.json") as f:
-    vennt_creds = json.load(f)
-
-username = vennt_creds["username"]
-password = vennt_creds["password"]
-
-# login
-data = '{"login": "%s", "password": "%s"}' % (username, password)
-response = requests.post(constants.SERVER_URL, data=data.encode('utf-8'), verify=False)
-response = json.loads(response.text)
-auth_token = response["auth_token"] # assume success
-bot.auth_token = auth_token
-
-
-@tasks.loop(minutes=60.0)
-async def renew_auth():
-    bot.logger.info("Renewing authentication")
-    data = '{"login": "%s", "password": "%s"}' % (username, password)
-    response = requests.post(constants.SERVER_URL, data=data.encode('utf-8'), verify=False)
-    bot.logger.info(response.text)
-    response = json.loads(response.text)
-    auth_token = response["auth_token"] # assume success
-    bot.auth_token = auth_token
-
-
 """
 Create a bot variable to access the config file in cogs so that you don't need to import it every time.
 
@@ -189,7 +162,6 @@ async def on_ready() -> None:
     bot.logger.info(f"Python version: {platform.python_version()}")
     bot.logger.info(f"Running on: {platform.system()} {platform.release()} ({os.name})")
     bot.logger.info("-------------------")
-    renew_auth.start()
     status_task.start()
     if config["sync_commands_globally"]:
         bot.logger.info("Syncing commands globally...")
